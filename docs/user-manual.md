@@ -917,7 +917,7 @@ yourself or the last admin.
 any authenticated user).
 
 Manage the registry of Model Context Protocol servers the gateway
-proxies (see the repo [`README.md`](../README.md), "MCP routing").
+proxies (see the [reference](./reference.md#mcp-routing), "MCP routing").
 
 - **Server list / add / edit / delete** — register a backend MCP server
   by name and base URL; the name becomes the `/mcp/{name}` path prefix.

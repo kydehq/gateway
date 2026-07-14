@@ -501,7 +501,7 @@ export ANTHROPIC_BASE_URL=http://localhost:8081
 export ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-See the [README](../README.md) for the full provider routing table.
+See the [reference](./reference.md#multi-provider-routing) for the full provider routing table.
 
 ### 5.7 Access the dashboard
 
@@ -1024,7 +1024,7 @@ upstreams:
 
 After `docker compose up -d`, calls to
 `https://llm.company.com/ollama/v1/chat/completions` route to the first
-entry, `/vllm/v1/…` to the second. See the [README](../README.md) for the
+entry, `/vllm/v1/…` to the second. See the [reference](./reference.md#custom-and-local-upstreams) for the
 full format.
 
 ### 10.3 DLP patterns
