@@ -1,10 +1,36 @@
-# Agent Behavioral Ledger Proxy
+# KYDE Gateway — The Behavioral Firewall for AI Agents
 
 [![CI](https://github.com/kydehq/gateway/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kydehq/gateway/actions/workflows/ci.yml)
 ![Backend coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/kydehq/gateway/badges/backend-coverage.json)
 ![Frontend coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/kydehq/gateway/badges/frontend-coverage.json)
 
-A drop-in OpenAI-compatible proxy that produces a **cryptographically signed, hash-chained behavioral ledger** of every AI agent action.
+Nobody hands real responsibility to an agent nobody can trust. Agents
+stay stuck waiting for human approval on every step — because when
+something goes wrong, nobody can prove what happened. The provider's
+log lives on their infrastructure, signed with their keys: the suspect
+can't write the police report.
+
+KYDE Gateway is a drop-in, OpenAI-compatible proxy that sits outside
+the agent, in the path itself. Every action is intercepted and recorded
+into an Ed25519-signed, hash-chained ledger — independent of every
+model provider, undeletable by any agent, including the one being
+investigated. And while it records, it sees what flows upstream: your
+prompts, traces, and corrections, before they become someone else's
+training data.
+
+**Prevent what must not happen. Prove what did. Own what your agents produce.**
+
+**Two ways to start — same install, one switch:**
+
+| | What it does | Setup |
+|---|---|---|
+| 🔍 **Observe** (start here) | Logs everything, blocks nothing. Zero risk, zero code changes. In week one you know: what your agents do, what leaves your house, what it costs. | One line: `export OPENAI_BASE_URL=http://localhost:8000/v1` — [Quickstart](#quickstart) |
+| 🛡️ **Enforce** (when ready) | Flip DLP prevention per pattern and MCP tool allow/deny — out-of-scope requests get a 403 before they reach the upstream. | [Policy enforcement](#policy-enforcement-dlp-prevention) |
+
+> **This is our public sandbox — we want your feedback.**
+> Broke during setup? Missing a provider? Wondering whether you'd ever
+> flip enforcement on? [Open an issue](../../issues/new/choose) or write
+> us: **feedback@kyde.com**. We read everything.
 
 ## What it does
 
