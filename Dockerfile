@@ -21,8 +21,6 @@
 #                                  drop kyde_enterprise-*.whl into ./wheels/
 #                                  before building (no private index / token).
 #
-# `EDITION=paid` was the old name for `enterprise`; it is now rejected with a
-# hard error so a stale caller never silently produces a sandbox image.
 #
 # The split is multi-stage on purpose: the runtime image copies only the
 # installed virtualenv, never the source tree, so enterprise code that was never
@@ -57,11 +55,8 @@ COPY wheels/ /tmp/wheels/
 # into the shared `kyde` namespace package. Sandbox installs core only —
 # find_spec then reports both features absent at runtime. An enterprise build
 # with no wheel present is a hard error rather than a silent sandbox image, and
-# any unknown EDITION (including the retired `paid`) fails loudly.
+# any unknown EDITION fails loudly.
 RUN pip install --upgrade pip && pip install . && \
-    if [ "$EDITION" = "paid" ]; then \
-        echo "ERROR: EDITION=paid was renamed to EDITION=enterprise — update your build arg"; exit 1; \
-    fi; \
     if [ "$EDITION" = "enterprise" ]; then \
         ls /tmp/wheels/kyde_enterprise-*.whl >/dev/null 2>&1 || \
             { echo "ERROR: EDITION=enterprise but no kyde_enterprise-*.whl found in ./wheels/"; exit 1; }; \

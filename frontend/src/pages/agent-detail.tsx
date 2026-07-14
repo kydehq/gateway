@@ -23,7 +23,7 @@ import { TrustScoreHero } from "@/components/shared/trust-score";
 import type { TopologyWindow } from "@/api/types";
 import { useMe } from "@/hooks/use-me";
 import { useFeatures } from "@/hooks/use-features";
-import { PaidLock } from "@/components/shared/upgrade-lock";
+import { EnterpriseLock } from "@/components/shared/upgrade-lock";
 import { getAgentDisplayName } from "@/lib/agent-names";
 import { fmtTokens } from "@/lib/format";
 import { formatHost } from "@/lib/host-format";
@@ -414,7 +414,7 @@ export default function AgentDetailPage() {
         <section className="rounded-md border bg-card p-5">
           <h2 className="text-sm font-semibold mb-3">Admin actions</h2>
           <div className="flex flex-wrap gap-2">
-            <PaidLock
+            <EnterpriseLock
               locked={!enforcementEnabled}
               hint="Agent blocking is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition is observe-only."
             >
@@ -426,8 +426,8 @@ export default function AgentDetailPage() {
               >
                 Block agent
               </Button>
-            </PaidLock>
-            <PaidLock
+            </EnterpriseLock>
+            <EnterpriseLock
               locked={!enforcementEnabled}
               hint="Agent blocking is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition is observe-only."
             >
@@ -438,7 +438,7 @@ export default function AgentDetailPage() {
               >
                 Unblock agent
               </Button>
-            </PaidLock>
+            </EnterpriseLock>
             <Link
               to={`/audit-log?agent=${encodeURIComponent(agentId)}`}
               className="text-xs text-muted-foreground hover:text-foreground hover:underline self-center ml-2"

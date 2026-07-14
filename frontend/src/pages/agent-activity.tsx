@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { useMe } from "@/hooks/use-me";
 import { useFeatures } from "@/hooks/use-features";
-import { PaidLock } from "@/components/shared/upgrade-lock";
+import { EnterpriseLock } from "@/components/shared/upgrade-lock";
 import { toast } from "sonner";
 import { fmtTokens, truncate } from "@/lib/format";
 import { useAgentLabel } from "@/hooks/use-agent-label";
@@ -696,7 +696,7 @@ function AgentDetailDialog({
 
                 <div className="flex justify-end gap-2 pt-2 border-t">
                   {isAdmin && (
-                    <PaidLock
+                    <EnterpriseLock
                       locked={!enforcementEnabled}
                       hint="Agent blocking is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition is observe-only."
                     >
@@ -708,7 +708,7 @@ function AgentDetailDialog({
                       >
                         Block agent
                       </Button>
-                    </PaidLock>
+                    </EnterpriseLock>
                   )}
                   <Button variant="outline" onClick={onClose}>Close</Button>
                 </div>

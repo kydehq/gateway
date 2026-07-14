@@ -27,7 +27,7 @@ import {
 } from "@/api/queries";
 import { useFeatures } from "@/hooks/use-features";
 import { useMe } from "@/hooks/use-me";
-import { PaidLock, PaidBadge } from "@/components/shared/upgrade-lock";
+import { EnterpriseLock, EnterpriseBadge } from "@/components/shared/upgrade-lock";
 import type { Policy } from "@/api/types";
 
 type SortKey =
@@ -174,7 +174,7 @@ function PreventionCard({ isAdmin }: { isAdmin: boolean }) {
           <div>
             <div className="flex items-center gap-2 text-sm font-medium">
               Prevention
-              {!enforcementEnabled && <PaidBadge />}
+              {!enforcementEnabled && <EnterpriseBadge />}
             </div>
             <p className="max-w-xl text-xs text-muted-foreground">
               When active, qualifying DLP hits block the request with a 403
@@ -184,7 +184,7 @@ function PreventionCard({ isAdmin }: { isAdmin: boolean }) {
             </p>
           </div>
         </div>
-        <PaidLock
+        <EnterpriseLock
           locked={!enforcementEnabled}
           hint="Inline blocking (prevention) is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition detects and alerts only."
         >
@@ -252,7 +252,7 @@ function PreventionCard({ isAdmin }: { isAdmin: boolean }) {
             </Button>
           </div>
         </div>
-        </PaidLock>
+        </EnterpriseLock>
       </div>
       {!enforcementEnabled ? (
         <p className="mt-2 text-xs text-muted-foreground">
@@ -498,7 +498,7 @@ export default function PoliciesPage() {
                         />
                       </TableCell>
                       <TableCell className="text-right">
-                        <PaidLock
+                        <EnterpriseLock
                           locked={!enforcementEnabled}
                           hint="Inline blocking (prevention) is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition detects and alerts only."
                         >
@@ -517,7 +517,7 @@ export default function PoliciesPage() {
                             onColor="red"
                             onToggle={(next) => onTogglePrevention(p, next)}
                           />
-                        </PaidLock>
+                        </EnterpriseLock>
                       </TableCell>
                     </TableRow>
                   );

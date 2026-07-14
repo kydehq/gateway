@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useFeatures } from "@/hooks/use-features";
-import { PaidLock, LockedMetric, LockedPanel } from "@/components/shared/upgrade-lock";
+import { EnterpriseLock, LockedMetric, LockedPanel } from "@/components/shared/upgrade-lock";
 
 const WINDOW_LABEL: Record<StatsWindow, string> = {
   "1h": "Last 1h",
@@ -382,7 +382,7 @@ export default function CompliancePage() {
             <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => exportLedgerCsv(exportWindow)}>
               Ledger Export (CSV)
             </Button>
-            <PaidLock
+            <EnterpriseLock
               locked={!signingEnabled}
               hint="Chain signatures require independent audit signing — available in the KYDE Enterprise edition."
               className="block w-full"
@@ -390,7 +390,7 @@ export default function CompliancePage() {
               <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => exportChainSignatures(exportWindow)}>
                 Chain Signatures (JSON)
               </Button>
-            </PaidLock>
+            </EnterpriseLock>
             <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={() => navigate("/compliance/api-docs")}>
               Audit API →
             </Button>

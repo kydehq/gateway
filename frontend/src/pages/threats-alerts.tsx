@@ -25,7 +25,7 @@ import { formatAlertId } from "@/lib/serial-ids";
 import { useAgentLabel } from "@/hooks/use-agent-label";
 import { useMe } from "@/hooks/use-me";
 import { useFeatures } from "@/hooks/use-features";
-import { PaidLock } from "@/components/shared/upgrade-lock";
+import { EnterpriseLock } from "@/components/shared/upgrade-lock";
 import { cn } from "@/lib/utils";
 import type { DlpAlert, DlpStatus, DlpDisposition } from "@/api/types";
 import {
@@ -682,7 +682,7 @@ export default function ThreatsAlertsPage() {
                             />
                           );
                         })()}
-                        <PaidLock
+                        <EnterpriseLock
                           locked={!enforcementEnabled}
                           hint="Agent blocking is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition is observe-only."
                         >
@@ -713,7 +713,7 @@ export default function ThreatsAlertsPage() {
                           >
                             Block Agent
                           </Button>
-                        </PaidLock>
+                        </EnterpriseLock>
                       </>
                     )}
                     {!isAdmin && (

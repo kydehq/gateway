@@ -21,7 +21,7 @@ from pathlib import Path
 _SRC = Path(__file__).resolve().parent.parent / "src"
 
 
-def test_sandbox_tree_imports_without_paid_code(tmp_path):
+def test_sandbox_tree_imports_without_enterprise_code(tmp_path):
     """Confirm an enterprise-code-free `kyde` tree imports with both flags False.
 
     Since the split, this repo (`kyde-gateway`) no longer ships signing.py /

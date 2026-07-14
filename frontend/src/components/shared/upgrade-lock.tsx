@@ -25,7 +25,7 @@ const DEFAULT_HINT = "Available in the KYDE Enterprise edition.";
  * badge is overlaid, and a tooltip shows the upgrade hint. When not locked,
  * the child renders untouched.
  */
-export function PaidLock({
+export function EnterpriseLock({
   locked,
   hint,
   className,
@@ -109,7 +109,7 @@ export function UpgradeCard() {
 }
 
 /** Small inline "Enterprise" chip for nav items / section headers. */
-export function PaidBadge({ className }: { className?: string }) {
+export function EnterpriseBadge({ className }: { className?: string }) {
   return (
     <Badge
       variant="tag-muted"
@@ -137,7 +137,7 @@ export function LockedMetric({ label }: { label: string }) {
         <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
           {label}
         </span>
-        <PaidBadge />
+        <EnterpriseBadge />
       </div>
       <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
         <Lock className="h-3 w-3" />
@@ -164,7 +164,7 @@ export function LockedPanel({
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {title}
         </p>
-        <PaidBadge />
+        <EnterpriseBadge />
       </div>
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Lock className="h-4 w-4" />
@@ -192,7 +192,7 @@ export function UpgradeNotice({
       </div>
       <div className="mb-1 flex items-center justify-center gap-2">
         <h2 className="text-base font-semibold">{title}</h2>
-        <PaidBadge />
+        <EnterpriseBadge />
       </div>
       <p className="mx-auto max-w-md text-sm text-muted-foreground">
         {children ??
