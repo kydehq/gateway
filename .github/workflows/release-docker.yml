@@ -67,6 +67,13 @@ jobs:
         with:
           ref: ${{ inputs.tag || github.ref }}
 
+      # arm64 is cross-built via QEMU emulation on the amd64 runner. Both
+      # Dockerfiles are pure pip-install / npm-build (no heavy native
+      # compilation), so emulation cost is acceptable; switch to a native
+      # ubuntu-24.04-arm runner matrix + manifest merge if this gets slow.
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -96,6 +103,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.context }}
+          # Multi-arch manifest: amd64 (servers/CI) + arm64 (Apple-Silicon Macs,
+          # Graviton, Ampere). `docker pull` picks the right variant automatically.
+          platforms: linux/amd64,linux/arm64
           build-args: |
             EDITION=${{ matrix.edition }}
           push: true
