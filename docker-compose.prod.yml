@@ -1,0 +1,104 @@
+# PROD posture — hardening deltas merged on top of docker-compose.yml.
+# ALWAYS combine with the base; naming -f files explicitly suppresses the dev
+# override (docker-compose.override.yml), so you get base + these deltas only.
+#
+#   docker compose --env-file .env.prod \
+#     -f docker-compose.yml -f docker-compose.prod.yml pull
+#   docker compose --env-file .env.prod \
+#     -f docker-compose.yml -f docker-compose.prod.yml --profile validator up -d
+#
+# Edition is chosen by the env file (GATEWAY_REPO), NOT this file — so the SAME
+# posture serves the enterprise image (.env.prod) or the public sandbox image
+# (.env.sandbox) with zero YAML changes.
+#
+# Deltas vs base: pull-only (no build), restart:always, resource limits + log
+# rotation on every service, and host publishing restricted to the UI on
+# loopback (put a TLS terminator in front). Everything else stays internal.
+
+services:
+  postgres:
+    restart: always
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits: { cpus: "2.0", memory: 2G }
+        reservations: { memory: 512M }
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  kyde-gateway:
+    command:                       # prod runs 4 uvicorn workers
+      - uvicorn
+      - kyde.server:proxy_app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --workers
+      - "4"
+    restart: always
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits: { cpus: "2.0", memory: 1G }
+        reservations: { memory: 256M }
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  kyde-api:
+    restart: always
+    stop_grace_period: 15s
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512M }
+        reservations: { memory: 128M }
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  kyde-ui:
+    # The ONLY host-published tier in prod; loopback-only so a host TLS
+    # terminator is the sole thing talking to either listener.
+    ports:
+      - "127.0.0.1:8080:80"
+      - "127.0.0.1:4000:4000"
+    restart: always
+    stop_grace_period: 10s
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 128M }
+        reservations: { memory: 32M }
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  dlp-regex:
+    restart: always
+    stop_grace_period: 15s
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 256M }
+        reservations: { memory: 64M }
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  dlp-bert:
+    restart: always
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits: { cpus: "2.0", memory: 4G }
+        reservations: { memory: 1G }
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  kyde-validator:
+    restart: always
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }

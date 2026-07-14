@@ -1,0 +1,298 @@
+# KYDE Gateway — BASE stack (edition- and posture-agnostic).
+#
+# This file defines WHAT the stack is. It publishes no host ports and pins no
+# edition. Two orthogonal choices layer on top:
+#
+#   * EDITION  (sandbox vs enterprise)  → the image reference, via ${GATEWAY_REPO}:
+#       sandbox    → ghcr.io/kydehq/gateway/gateway              (public core)
+#       enterprise → ghcr.io/kydehq/gateway-distribution/gateway (licensed)
+#     signing/enforce is an image concern — nothing else in compose changes.
+#
+#   * POSTURE  (dev vs prod)      → a second compose file merged on top:
+#       dev  → docker-compose.override.yml   (auto: local build + host ports)
+#       prod → docker-compose.prod.yml       (explicit -f: pull, loopback, limits)
+#
+# Quick reference (full matrix in DEPLOYMENT.md):
+#   dev, sandbox (built locally):     docker compose up --build
+#   dev, enterprise (needs ./wheels/*.whl): docker compose --env-file .env.enterprise-dev up --build
+#   prod, enterprise:      docker compose --env-file .env.prod \
+#                      -f docker-compose.yml -f docker-compose.prod.yml up -d
+#   prod, sandbox:   as above with --env-file .env.sandbox   (hardened public deploy)
+#
+# Optional add-ons (any posture):
+#   --profile with-bert   neural DLP classifier (needs HF model pull)
+#   --profile validator   local Ollama validator LLM
+#   --profile dev         mailpit mail-trap + validator, for local inspection
+#   -f docker-compose.regex-dev.yml   swap in a locally-built dlp-regex:local
+#
+# Only gateway + ui vary by edition. DLP sidecars ship only from the licensed
+# repo regardless of edition, so ${DLP_REPO} is pinned separately.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kyde-postgres
+    environment:
+      POSTGRES_DB: kyde
+      POSTGRES_USER: kyde
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kyde-dev-only}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kyde -d kyde"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - gateway-network
+
+  kyde-gateway:
+    # THE edition switch is ${GATEWAY_REPO}. Everything else is identical
+    # between editions. The dev override adds a local `build:` on top.
+    image: ${REGISTRY:-ghcr.io/kydehq}/${GATEWAY_REPO:-gateway}/gateway:${TAG:-v0.3.1}
+    container_name: kyde-gateway
+    init: true
+    # Proxy sub-app only (no dashboard mount). Prod bumps to --workers 4.
+    command:
+      - uvicorn
+      - kyde.server:proxy_app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    expose:
+      - "8000"
+    volumes:
+      - kyde-store:/home/kyde/.agent-ledger
+      - ./config.yaml:/app/config.yaml:ro
+    environment:
+      DATABASE_URL: postgresql://kyde:${POSTGRES_PASSWORD:-kyde-dev-only}@postgres:5432/kyde
+      DLP_REGEX_THRESHOLD: ${DLP_REGEX_THRESHOLD:-0.7}
+      DLP_BERT_THRESHOLD: ${DLP_BERT_THRESHOLD:-0.5}
+      DLP_BERT_ENABLED: ${DLP_BERT_ENABLED:-false}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health', timeout=5).read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      dlp-regex:
+        condition: service_healthy
+      # Optional — only started by `--profile with-bert`. required:false lets the
+      # gateway start normally when bert is absent.
+      dlp-bert:
+        condition: service_healthy
+        required: false
+    networks:
+      - gateway-network
+
+  kyde-api:
+    image: ${REGISTRY:-ghcr.io/kydehq}/${GATEWAY_REPO:-gateway}/gateway:${TAG:-v0.3.1}
+    container_name: kyde-api
+    init: true
+    command:
+      - kyde
+      - dashboard
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8501"
+    expose:
+      - "8501"
+    volumes:
+      - kyde-store:/home/kyde/.agent-ledger
+      # Same config.yaml as kyde-gateway — the dashboard surfaces the upstream
+      # list via /api/configuration, so it needs the merged view.
+      - ./config.yaml:/app/config.yaml:ro
+    environment:
+      DATABASE_URL: postgresql://kyde:${POSTGRES_PASSWORD:-kyde-dev-only}@postgres:5432/kyde
+      DLP_BERT_ENABLED: ${DLP_BERT_ENABLED:-false}
+    # Auth is DB-backed. On first start visit the UI; it routes to /setup to
+    # create the admin. Recover a locked-out deployment with:
+    #   docker compose exec kyde-api kyde admin create-admin --username rescue --email you@co
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8501/login', timeout=5).read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gateway-network
+
+  # nginx: two listeners, one container.
+  #   :80   → admin surface (SPA + /api/* + auth flows)
+  #   :4000 → LLM proxy (/v1/* and /<provider>/v1/*)
+  # Separate ports keep /api paths from colliding with /v1 and let agent traffic
+  # avoid sharing an nginx connection pool with browser sessions. The dev
+  # override and prod file publish these to the host differently.
+  kyde-ui:
+    # UI content is edition-agnostic, but is published under both repos so the
+    # public sandbox stack has no licensed-path dependency.
+    image: ${REGISTRY:-ghcr.io/kydehq}/${GATEWAY_REPO:-gateway}/ui:${TAG:-v0.3.1}
+    container_name: kyde-ui
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 3s
+    depends_on:
+      kyde-api:
+        condition: service_healthy
+      kyde-gateway:
+        condition: service_healthy
+    networks:
+      - gateway-network
+
+  # Regex DLP engine — the always-on detector. Swap in a locally-built image
+  # for engine work with `-f docker-compose.regex-dev.yml`.
+  dlp-regex:
+    image: ${REGISTRY:-ghcr.io/kydehq}/${DLP_REPO:-gateway-distribution}/dlp-classifier-regex:${DLP_REGEX_VERSION:-v0.2.0}
+    container_name: dlp-regex
+    expose:
+      - "8000"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      LOG_LEVEL: INFO
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health', timeout=5).read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - gateway-network
+    labels:
+      - "dlp.type=regex"
+      - "dlp.speed=fast"
+
+  # Neural DLP — off unless `--profile with-bert` (needs an HF model pull). Also
+  # flip DLP_BERT_ENABLED=true so the gateway actually calls it.
+  dlp-bert:
+    image: ${REGISTRY:-ghcr.io/kydehq}/${DLP_REPO:-gateway-distribution}/dlp-classifier-bert:${DLP_BERT_VERSION:-v0.2.0}
+    container_name: dlp-bert
+    profiles: ["with-bert"]
+    expose:
+      - "8000"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      MODEL_TYPE: enhanced
+      LOG_LEVEL: INFO
+      HF_USER_ORG: ${HF_USER_ORG:-kydehq}
+    volumes:
+      - dlp-models:/app/dlp_model
+      - dlp-models:/app/dlp_model_enhanced
+      - dlp-models:/app/dlp_model_german
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - gateway-network
+    labels:
+      - "dlp.type=bert"
+      - "dlp.accuracy=high"
+
+  # Local validator LLM (Ollama + Gemma 3 4B) for context-aware re-checks of DLP
+  # alerts. In `dev` and `validator` profiles: prod turns it on with
+  # `--profile validator`; the dev override adds a host port for poking it.
+  # First start pulls ~3 GB of weights into kyde-validator-models (needs egress
+  # to ollama.com); later starts are offline. GPU auto-detected; CPU works but
+  # is slow.
+  kyde-validator:
+    image: ollama/ollama:latest
+    container_name: kyde-validator
+    profiles: ["dev", "validator"]
+    expose:
+      - "11434"
+    volumes:
+      - kyde-validator-models:/root/.ollama
+    environment:
+      VALIDATOR_MODEL: ${VALIDATOR_MODEL:-gemma3:4b}
+      OLLAMA_KEEP_ALIVE: "30m"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ollama serve &
+        server_pid=$$!
+        until ollama list > /dev/null 2>&1; do sleep 1; done
+        ollama pull "$${VALIDATOR_MODEL}" || echo "  ⚠ validator: pull failed; will auto-pull on first request"
+        wait $$server_pid
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 300s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    networks:
+      - gateway-network
+    labels:
+      - "llm.role=validator"
+      - "llm.local=true"
+
+  # Dev mail-trap — catches outgoing SMTP on gateway-network so you can inspect
+  # what would have been sent. Dev-only (`--profile dev`): SMTP on host :25
+  # (needs root/CAP_NET_BIND_SERVICE; fails if a local MTA owns :25), web UI on
+  # http://localhost:8025.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: kyde-mailpit
+    profiles: ["dev"]
+    ports:
+      - "25:1025"
+      - "8025:8025"
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8025/livez"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - gateway-network
+    labels:
+      - "role=mailtrap"
+
+volumes:
+  postgres-data:
+    driver: local
+  # Signing keys only (signing.key / signing.pub / tpm_key.pem), shared between
+  # proxy (signs) and dashboard (verifies). Inert in the sandbox edition, which
+  # has no signing code — kept for symmetry so an enterprise swap needs no volume change.
+  kyde-store:
+    driver: local
+  dlp-models:
+    driver: local
+  kyde-validator-models:
+    driver: local
+
+networks:
+  gateway-network:
+    driver: bridge

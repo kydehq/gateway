@@ -1,0 +1,130 @@
+name: Release Docker Images
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag to build (e.g., v1.0.0)'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    # Each release ships two editions of two images:
+    #   - gateway: FastAPI backend (proxy + dashboard API). Consumed by
+    #              kyde-gateway and kyde-api services.
+    #   - ui:      nginx + compiled SPA. Consumed by the kyde-ui service.
+    # Both get identical tags so `TAG` in the compose env file
+    # (.env.prod / .env.sandbox) pins them together.
+    #
+    # Editions (selected via the EDITION build arg → Dockerfile):
+    #   - enterprise → ghcr.io/kydehq/gateway-distribution/*  (licensed)
+    #   - sandbox    → ghcr.io/kydehq/gateway/*               (public core, this repo)
+    #
+    # The ENTERPRISE GATEWAY image is NOT built here. Under the package split the enterprise
+    # code (kyde.signing / kyde.enforce) lives only in the private
+    # gateway-enterprise repo, which builds and publishes the enterprise gateway image
+    # from its own pipeline (artifact shipping — the enterprise wheel is dropped
+    # into ./wheels/ and installed). This workflow therefore builds the sandbox
+    # gateway image plus BOTH editions of the UI — the UI is edition-agnostic
+    # (same nginx+SPA image, just published to the licensed and public paths), so
+    # it needs no enterprise code. `EDITION` is unused by frontend/Dockerfile (a
+    # harmless build-arg warning).
+    #
+    # build-push-action defaults `file` to `{context}/Dockerfile`, which
+    # matches both of ours — no explicit dockerfile path needed.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ui
+            context: ./frontend
+            edition: enterprise
+            repo: gateway-distribution
+          - image: gateway
+            context: .
+            edition: sandbox
+            repo: gateway
+          - image: ui
+            context: ./frontend
+            edition: sandbox
+            repo: gateway
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/kydehq/${{ matrix.repo }}/${{ matrix.image }}
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+            type=raw,value=${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/kydehq/${{ matrix.repo }}
+            org.opencontainers.image.title=kyde-${{ matrix.image }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          build-args: |
+            EDITION=${{ matrix.edition }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Cache scope keys on edition too — enterprise and sandbox both build an
+          # image named `gateway` but with different contents.
+          cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.edition }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.edition }}
+
+  create-release:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, skipping"
+          else
+            gh release create "$TAG" --title "$TAG" --generate-notes
+          fi

@@ -1,0 +1,8 @@
+# Build-artifact drop for the enterprise image (EDITION=enterprise).
+#
+# Place the kyde-enterprise wheel here before building the enterprise image:
+#   (in ../gateway-enterprise)  python -m build --wheel
+#   cp ../gateway-enterprise/dist/kyde_enterprise-*.whl ./wheels/
+#
+# The wheel is PROPRIETARY — it is gitignored and must never be committed to
+# this (public) repo. This directory stays empty for sandbox builds.

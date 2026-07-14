@@ -1,0 +1,14 @@
+# Contributor opt-in: run a locally-built dlp-regex image instead of pulling the
+# published one. Use ONLY when hacking on the regex engine. Add it after the dev
+# override so it wins:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.override.yml \
+#     -f docker-compose.regex-dev.yml up --build
+#
+# Build the image first (in the regex engine repo): `docker build -t dlp-regex:local .`
+# pull_policy:never makes a missing image fail loudly rather than pulling ghcr.
+
+services:
+  dlp-regex:
+    image: dlp-regex:local
+    pull_policy: never

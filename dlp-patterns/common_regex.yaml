@@ -1,0 +1,109 @@
+source: common_regex
+version: "1.0.0"
+description: "CommonRegex standard identifier patterns"
+enabled: true
+
+patterns:
+  - id: email_address
+    name: "Email Address"
+    category: pii
+    severity: MEDIUM
+    base_confidence: 0.75
+    validator_id: null
+    tags: [email, contact]
+    description: "RFC 5321-compliant email address"
+    pattern: >-
+      [a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}
+    examples:
+      - "user@example.com"
+      - "first.last+tag@sub.domain.org"
+    false_positive_hints:
+      - "example@example.com"
+
+  - id: visa_credit_card
+    name: "VISA Credit Card"
+    category: financial
+    severity: CRITICAL
+    base_confidence: 0.70
+    validator_id: luhn
+    tags: [credit_card, payment, visa]
+    description: "VISA card 16-digit PAN with optional separators"
+    pattern: >-
+      \b4[0-9]{3}(?:[ \-]?[0-9]{4}){3}\b
+    examples:
+      - "4111 1111 1111 1111"
+      - "4111-1111-1111-1111"
+      - "4111111111111111"
+
+  - id: mastercard_credit_card
+    name: "Mastercard Credit Card"
+    category: financial
+    severity: CRITICAL
+    base_confidence: 0.70
+    validator_id: luhn
+    tags: [credit_card, payment, mastercard]
+    description: "Mastercard 16-digit PAN"
+    pattern: >-
+      \b(?:5[1-5][0-9]{2}|2(?:2[2-9][0-9]|[3-6][0-9]{2}|7[01][0-9]|720))(?:[ \-]?[0-9]{4}){3}\b
+    examples:
+      - "5500 0000 0000 0004"
+      - "2221000000000009"
+
+  - id: amex_credit_card
+    name: "American Express Card"
+    category: financial
+    severity: CRITICAL
+    base_confidence: 0.70
+    validator_id: luhn
+    tags: [credit_card, payment, amex]
+    description: "American Express 15-digit PAN"
+    pattern: >-
+      \b3[47][0-9]{2}(?:[ \-]?[0-9]{4}){3}\b
+    examples:
+      - "3782 822463 10005"
+
+  - id: us_phone_number
+    name: "US Phone Number"
+    category: pii
+    severity: LOW
+    base_confidence: 0.60
+    validator_id: null
+    tags: [phone, contact, us]
+    description: "US phone number with optional +1 and separators"
+    pattern: >-
+      \b(?:\+?1[-.\s]?)?\(?[2-9][0-8][0-9]\)?[-.\s]?[2-9][0-9]{2}[-.\s]?[0-9]{4}\b
+
+  - id: ipv4_address
+    name: "IPv4 Address"
+    category: network
+    severity: LOW
+    base_confidence: 0.55
+    validator_id: null
+    tags: [ip, network, ipv4]
+    description: "IPv4 address 0.0.0.0 to 255.255.255.255"
+    pattern: >-
+      \b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b
+
+  - id: ipv6_address
+    name: "IPv6 Address"
+    category: network
+    severity: LOW
+    base_confidence: 0.60
+    validator_id: null
+    tags: [ip, network, ipv6]
+    description: "IPv6 address"
+    pattern: >-
+      (?:[0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}
+
+  - id: url
+    name: "URL"
+    category: network
+    severity: LOW
+    base_confidence: 0.65
+    validator_id: null
+    tags: [url, web]
+    description: "HTTP(S) URL"
+    pattern: >-
+      https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&/=]*)
+    examples:
+      - "https://example.com/path"

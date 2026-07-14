@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kyde-gateway"
+version = "0.1.0"
+description = "Agent Behavioral Ledger – tamper-evident audit trail for AI agent interactions"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "httpx>=0.27.0",
+    "uvicorn[standard]>=0.30.0",
+    "cryptography>=43.0.0",
+    "python-multipart>=0.0.9",
+    "argon2-cffi>=23.1.0",
+    "psycopg[binary,pool]>=3.2",
+    "aiosmtplib>=3.0.0",
+    "reportlab>=4.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+# `kyde` is a PEP 420 namespace package (no top-level __init__.py) so the
+# private `kyde-enterprise` wheel can contribute `kyde.signing` / `kyde.enforce`
+# into the same import package. `namespaces = true` is REQUIRED for setuptools
+# to discover the __init__.py-less `kyde/` directory. (kyde.migrations and
+# kyde.enforce keep their own __init__.py and remain regular subpackages.)
+namespaces = true
+
+# Ship the SQL migration files alongside the Python module. Without this,
+# `pip install .` only copies *.py; the runner finds an empty migrations/
+# directory at startup and the new schema (verification_runs, agents,
+# sessions, pricing, agent_blocks, session_intents) never gets created.
+# Symptom: /health returns 500 on the first call that touches a new table.
+[tool.setuptools.package-data]
+kyde = ["migrations/sql/*.sql", "migrations/README.md"]
+
+[project.optional-dependencies]
+# NOTE: the `tpm` extra (tpm2-pytss) moved to the private `kyde-enterprise`
+# distribution — only `kyde/signing.py` uses TPM, and that file lives in
+# enterprise. Install hardware signing via `pip install kyde-enterprise[tpm]`.
+test = [
+    "pytest>=8.0",
+    "httpx>=0.27",
+]
+
+[project.scripts]
+kyde = "kyde.commands:run_cli_entry"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+# Tests need a Postgres reachable at $TEST_POSTGRES_URL (default:
+# postgresql://witness:witness-dev-only@localhost:5432). The dev
+# docker-compose.yml exposes the `postgres` service on 127.0.0.1:5432.
+# A dedicated `witness_test` database is created automatically on first run
+# and TRUNCATEd between tests so dev data is never touched.

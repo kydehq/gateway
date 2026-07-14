@@ -1,0 +1,153 @@
+name: CI - Linting & Quality Gates
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.14'
+          cache: 'pip'
+
+      - name: Install linting tools
+        run: |
+          pip install -r requirements-dev.txt
+
+      - name: Run Ruff linter
+        run: |
+          ruff check . --config pyproject.toml
+
+      - name: Check code formatting with Black
+        run: |
+          black . --check --diff
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend ESLint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm run test
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: witness
+          POSTGRES_USER: witness
+          POSTGRES_PASSWORD: witness-ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U witness -d witness"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_POSTGRES_URL: postgresql://witness:witness-ci@localhost:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.14'
+          cache: 'pip'
+
+      - name: Install package with test extras
+        run: pip install -e ".[test]"
+
+      - name: Run pytest
+        run: pytest -ra
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+  docker-build:
+    # Public CI can only build the SANDBOX edition: the enterprise image needs the
+    # proprietary kyde-enterprise wheel, which lives in the private
+    # gateway-enterprise repo and is never present here. An enterprise build would hard-
+    # fail on the Dockerfile's missing-wheel guard. The enterprise image is built and
+    # published by the gateway-enterprise pipeline. See docs/ci.md.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build sandbox Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          build-args: |
+            EDITION=sandbox
+          push: false
+          load: true
+          tags: kyde-proxy:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test edition
+        run: |
+          docker run --rm kyde-proxy:test \
+            python -c "from kyde._features import edition; assert edition()=='sandbox', edition()"
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          input: 'kyde-proxy:test'
+          format: 'sarif'
+          output: 'docker-trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Docker scan results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: 'docker-trivy-results.sarif'
+          category: 'docker-scan'
+        continue-on-error: true

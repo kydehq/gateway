@@ -1,0 +1,37 @@
+# Gateway upstream configuration
+#
+# Entries here override built-in defaults or add new upstreams.
+# New upstream names become valid path prefixes automatically, e.g.:
+#   /ollama/v1/chat/completions  →  http://localhost:11434/v1/chat/completions
+#
+# Set WITNESS_CONFIG=/path/to/config.yaml to load from a non-default location.
+
+upstreams:
+  anthropic:
+    base: https://api.anthropic.com
+    api_prefix: /v1
+  ollama:
+    base: http://kyde-validator:11434
+    api_prefix: ""
+
+# Examples — uncomment and adjust as needed:
+#
+# Override the default OpenAI endpoint (e.g. point to a local proxy):
+#   openai:
+#     base: http://my-openai-proxy.internal
+#     api_prefix: /v1
+#
+# Add a local Ollama instance:
+#   ollama:
+#     base: http://localhost:11434
+#     api_prefix: /v1
+#
+# Add a vLLM server:
+#   vllm:
+#     base: http://localhost:8000
+#     api_prefix: /v1
+#
+# Add an LM Studio instance:
+#   lmstudio:
+#     base: http://localhost:1234
+#     api_prefix: /v1

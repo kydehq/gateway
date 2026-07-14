@@ -1,0 +1,44 @@
+source: owasp_crs
+version: "1.0.0"
+description: "OWASP ModSecurity Core Rule Set patterns"
+enabled: true
+
+patterns:
+  - id: password_field
+    name: "Password Field Value"
+    category: credential
+    severity: HIGH
+    base_confidence: 0.70
+    validator_id: null
+    tags: [password, credential]
+    description: "Common password field patterns"
+    pattern: >-
+      (?i)password["\']?\s*[=:]\s*["\']([^"\']{6,256})["\']
+    examples:
+      - "password='secretpass123'"
+
+  - id: bearer_token
+    name: "Bearer Token"
+    category: credential
+    severity: HIGH
+    base_confidence: 0.80
+    validator_id: null
+    tags: [token, auth, credential]
+    description: "HTTP Bearer token pattern"
+    pattern: >-
+      (?i)bearer\s+[A-Za-z0-9\-._~+/]+=*
+    examples:
+      - "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+
+  - id: api_key_in_header
+    name: "API Key in Header"
+    category: credential
+    severity: HIGH
+    base_confidence: 0.75
+    validator_id: null
+    tags: [api_key, credential, header]
+    description: "API key in common header patterns"
+    pattern: >-
+      (?i)(x-)?api[_\-]?key["\']?\s*[=:]\s*["\']?([A-Za-z0-9\-_]{20,})["\']?
+    examples:
+      - "api-key: abc123def456ghi789jkl012"

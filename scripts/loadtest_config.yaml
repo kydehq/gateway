@@ -1,0 +1,13 @@
+# Proxy config for the Tier 2 load test. Points every upstream at the
+# local mock_upstream.py so we measure the proxy's overhead — not
+# OpenAI/Anthropic network latency.
+#
+# Start the proxy with this file via:
+#   KYDE_CONFIG=scripts/loadtest_config.yaml python -m uvicorn kyde.server:app --port 8000
+upstreams:
+  openai:
+    base: http://localhost:9000
+    api_prefix: /v1
+  anthropic:
+    base: http://localhost:9000
+    api_prefix: /v1

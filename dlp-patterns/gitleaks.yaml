@@ -1,0 +1,132 @@
+source: gitleaks
+version: "1.0.0"
+description: "Gitleaks/TruffleHog credential patterns"
+enabled: true
+
+patterns:
+  - id: aws_access_key_id
+    name: "AWS Access Key ID"
+    category: credential
+    severity: CRITICAL
+    base_confidence: 0.95
+    validator_id: null
+    tags: [aws, cloud, key, credential]
+    description: "AWS Access Key ID format (AKIA...)"
+    pattern: >-
+      \b(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}\b
+    examples:
+      - "AKIAIOSFODNN7EXAMPLE"
+
+  - id: aws_secret_access_key
+    name: "AWS Secret Access Key"
+    category: credential
+    severity: CRITICAL
+    base_confidence: 0.85
+    validator_id: null
+    tags: [aws, cloud, secret, credential]
+    description: "AWS Secret Access Key in common patterns"
+    pattern: >-
+      (?i)aws[_\-\s]?secret[_\-\s]?(?:access[_\-\s]?)?key["']?\s*[=:]\s*["']?([A-Za-z0-9/+=]{40})
+
+  - id: github_personal_access_token
+    name: "GitHub Personal Access Token"
+    category: credential
+    severity: CRITICAL
+    base_confidence: 0.97
+    validator_id: null
+    tags: [github, token, credential, vcs]
+    description: "GitHub personal access token (ghp_...)"
+    pattern: >-
+      \b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36,255}\b
+    examples:
+      - "ghp_1234567890abcdefghijklmnopqrstuvwxyzABC"
+
+  - id: openai_api_key
+    name: "OpenAI API Key"
+    category: credential
+    severity: CRITICAL
+    base_confidence: 0.98
+    validator_id: null
+    tags: [openai, llm, api_key, credential]
+    description: "OpenAI API key (sk-...)"
+    pattern: >-
+      \bsk-[A-Za-z0-9]{48}\b
+    examples:
+      - "sk-proj-1234567890abcdefghijklmnopqrstuvwxyzABCDEFGH"
+
+  - id: anthropic_api_key
+    name: "Anthropic API Key"
+    category: credential
+    severity: CRITICAL
+    base_confidence: 0.98
+    validator_id: null
+    tags: [anthropic, llm, api_key, credential]
+    description: "Anthropic API key (sk-ant-...)"
+    pattern: >-
+      \bsk-ant-[A-Za-z0-9\-_]{93,}\b
+    examples:
+      - "sk-ant-1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrs"
+
+  - id: generic_jwt
+    name: "JSON Web Token (JWT)"
+    category: credential
+    severity: HIGH
+    base_confidence: 0.80
+    validator_id: null
+    tags: [jwt, token, auth, credential]
+    description: "JSON Web Token format (eyJ...)"
+    pattern: >-
+      eyJ[A-Za-z0-9\-_]+\.eyJ[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_.+/=]*
+    examples:
+      - "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+
+  - id: private_key_header
+    name: "RSA/PEM Private Key"
+    category: credential
+    severity: CRITICAL
+    base_confidence: 0.99
+    validator_id: null
+    tags: [private_key, pem, rsa, ssh, credential]
+    description: "Private key PEM header"
+    pattern: >-
+      -----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----
+    examples:
+      - "-----BEGIN RSA PRIVATE KEY-----"
+      - "-----BEGIN OPENSSH PRIVATE KEY-----"
+
+  - id: slack_token
+    name: "Slack Bot/App Token"
+    category: credential
+    severity: CRITICAL
+    base_confidence: 0.96
+    validator_id: null
+    tags: [slack, token, credential]
+    description: "Slack bot or app token"
+    pattern: >-
+      xox[abp]-[0-9]{10,13}-[0-9]{10,13}-[A-Za-z0-9]{32}
+    examples:
+      - "xoxb-123456789012-1234567890123-1234567890abcdef"
+
+  - id: stripe_api_key
+    name: "Stripe API Key"
+    category: credential
+    severity: CRITICAL
+    base_confidence: 0.96
+    validator_id: null
+    tags: [stripe, payment, api_key, credential]
+    description: "Stripe API key (sk_live_... or pk_live_...)"
+    pattern: >-
+      [sr]k_live_[0-9a-zA-Z]{24,}
+
+  - id: database_connection_string
+    name: "Database Connection String"
+    category: credential
+    severity: HIGH
+    base_confidence: 0.70
+    validator_id: null
+    tags: [database, connection, credential]
+    description: "Database connection string with credentials"
+    pattern: >-
+      (?i)(postgres|mysql|mongodb|mssql)://[^\s]*@[^\s]*:[^\s]*
+    examples:
+      - "postgresql://user:password@localhost:5432/dbname"
