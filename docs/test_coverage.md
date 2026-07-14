@@ -1,51 +1,24 @@
 # Test Coverage — Summary
 
-**Date:** 2026-06-22
-**Commit:** test-coverage expansion (Vitest frontend suite + backend unit tests)
+**Date:** 2026-07-14 (numbers from a full local run of both suites on this date)
 **Question:** What does the test suite cover today, and where are the gaps?
 
 ## TL;DR
 
 | Layer | Tests | Coverage | Notes |
 |---|---|---|---|
-| **Backend** (`src/witness`, pytest) | 675 passing | **72%** lines (1781 / 6324 missed) | 49 test files |
-| **Frontend** (`frontend/src`, Vitest) | 164 passing | **42%** statements / **55%** branch (pages now 51%) | 52 test files |
+| **Backend** (`src/kyde`, pytest) | 943 passing, 6 skipped | **82%** lines (1134 / 6408 missed) | 55 test files |
+| **Frontend** (`frontend/src`, Vitest) | 164 passing | **42%** statements / **55%** branch | 52 test files |
 
-Unit-level coverage of pure functions and data transforms is strong on both
-sides. The untested surface is concentrated in (1) a few high-stakes backend
-modules — DLP and signing especially — and (2) essentially all React
-page/view components.
+The security- and integrity-critical backend paths (DLP, triage, auth,
+settings, notifications, the proxy data plane) are at or near full coverage.
+The frontend covers all pure logic and every route component's render states;
+the remaining gap is deeper interaction coverage inside the large forensic
+pages.
 
-> **Update (post-2026-06-22):** the high-stakes backend gaps are now closed —
-> `dlp.py` 48%→99%, `dlp_triage.py` 29%→100%, `signing.py` 51%→59% (TPM
-> hardware path is the rest), `server.py` 65%→90%, `auth.py` 33%→100%,
-> `settings.py` 62%→100%, `smtp_sender.py` 28%→100%, `notifications.py`
-> 16%→100%, `dashboard.py` 68%→81%. Added `test_dlp_scanners.py` (68),
-> `test_dlp_triage.py`, `test_signing_keys.py`, `test_proxy_helpers.py` (45),
-> `test_proxy_handler.py` (17), `test_auth.py` (24), `test_settings.py` (37),
-> `test_smtp_sender.py` (24), `test_notifications.py` (25),
-> `test_dashboard_endpoints.py` (46). The 72% backend aggregate below predates
-> these additions and is now substantially higher. Remaining backend gaps are
-> lower-stakes: `dashboard.py`'s export-endpoint error branches + HTML
-> templates, and `config.py`/`migrations` glue.
->
-> **Frontend (priority #4) — done:** `pages/` went from ~0% to **51%
-> statements** (settings subpages 66%; whole frontend 8.8%→42%). **Every**
-> route component now has a test (32 page files, 164 frontend tests total)
-> covering render/loading/empty/error states plus key interactions
-> (`dlp-rules` add+validate, `users` roster+RBAC, `profile` password change).
-> The heaviest forensic pages (`sessions`, `threats-alerts`, `audit-log`,
-> `timeline`, `policies`, `compliance`, `fleet-status`, `agent-detail`,
-> `host-detail`, `agent-chains`, `agent-activity`) have mount/loading smoke
-> tests. Reusable patterns established: hoisted mock holders for per-test hook
-> returns, `importOriginal` spread to keep module constants while overriding
-> hooks, child-component stubbing, and an explicit recharts stub (a
-> Proxy-everything mock answers `then` and hangs the import). The remaining
-> frontend gap is deeper interaction coverage inside the large forensic pages,
-> not whole-page absence.
-
-The headline frontend number (8.8%) is misleading: it is dragged down by
-route-level UI components at 0%. The logic-bearing code is near-complete.
+The 6 skipped backend tests exercise `kyde.signing`, which lives in the
+private `kyde-enterprise` package since the edition split — they skip
+gracefully in this public tree and run in the `gateway-enterprise` pipeline.
 
 ---
 
@@ -54,7 +27,7 @@ route-level UI components at 0%. The logic-bearing code is near-complete.
 ```bash
 # Backend (needs the kyde-postgres container on 127.0.0.1:5432)
 TEST_POSTGRES_URL="postgresql://kyde:kyde-dev-only@localhost:5432" \
-  uv run --extra test --with pytest-cov \
+  uv run --extra test \
   python -m pytest tests/ --cov=src --cov-report=term-missing
 
 # Frontend
@@ -62,67 +35,88 @@ cd frontend && npm run coverage
 ```
 
 Note: `TEST_POSTGRES_URL` is the base URL **without** a database suffix;
-conftest appends `/witness_test` and creates that DB on first run.
+conftest appends the test-database name and creates that DB on first run.
+
+Caveat: the frontend interaction tests use a 5 s timeout — run them on an
+otherwise idle machine.
+
+CI runs both suites with coverage on every push/PR and, on pushes to `main`,
+publishes the percentages as the README's coverage badges (see
+`.github/workflows/ci.yml`, `badges` job).
 
 ---
 
-## Backend — solid, with real soft spots
+## Backend — strong on the paths that matter
 
-Core security / integrity paths are well covered:
+Core security / integrity paths:
 
 | Module | Coverage |
 |---|---|
-| `mcp_policy.py` | 100% |
-| `trust.py`, `topology.py`, `pdf_export.py`, `host_resolver.py` | 98% |
-| `enforce/blocklist.py`, `mcp_registry.py` | 97% |
+| `auth.py`, `settings.py`, `smtp_sender.py`, `notifications.py`, `dlp_triage.py`, `mcp_policy.py` | 100% |
+| `dlp.py` | 99% |
+| `host_resolver.py`, `topology.py`, `mcp_registry.py` | 97–98% |
+| `trust.py` | 96% |
 | `audit_log.py`, `mcp_aggregator.py` | 95% |
+| `pdf_export.py` | 94% |
 | `network_origin.py` | 93% |
-| `mcp_ledger.py`, `dlp_json_walk.py` | 91–92% |
-| `crypto.py`, `ledger.py`, `enforce/prevention.py` | 89–90% |
+| `ledger.py` | 92% |
+| `dlp_json_walk.py` | 91% |
+| `crypto.py` | 90% |
+| `server.py` (proxy data plane: routing, request handler, streaming) | 89% |
+| `mcp_proxy.py` | 88% |
 
-Gaps that matter (not just CLI/glue):
+Remaining gaps, in rough priority order:
 
-| Module | Coverage | Why it matters |
+| Module | Coverage | Assessment |
 |---|---|---|
-| `dlp.py` | 🟢 99% | core DLP detection logic — **was 48%**; scanner HTTP paths, allowlist filter, store loop, retrospective sweep now covered (`test_dlp_scanners.py`) |
-| `dlp_triage.py` | 🟢 100% | triage state machine — **was 29%** (`test_dlp_triage.py`) |
-| `signing.py` | 🟡 59% | byte-level signing contract — **frozen across the Python→Rust split**. **was 51%**; key mgmt + Ed25519/ECDSA verify + TPM dispatch covered (`test_signing_keys.py`). Remaining 41% is the `TpmSigner` hardware path (`ESAPI()` / `tpm2_pytss`) — needs a TPM (or simulator), not unit-testable |
-| `server.py` | 🟢 90% | the proxy data plane — **was 65%**; routing/normalization helpers, the request handler (success / non-200 / timeout / connection-error / NDJSON / non-JSON), and streaming (OpenAI / Anthropic / Ollama) now covered (`test_proxy_helpers.py`, `test_proxy_handler.py`). Remaining ~10% is defensive exception handlers, optional-codec returns, and lifespan startup |
-| `dashboard.py` | 🟢 81% | control-plane API — **was 68%**; settings (GET/PATCH/DELETE/smtp-test), DLP allow-list rules, DLP-alert triage HTTP layer, profile self-service, user unlock, and the metrics/configuration snapshots now covered with their RBAC gates (`test_dashboard_endpoints.py`). Remaining ~19% is export-endpoint error branches, scattered edge branches, and HTML page template constants |
-| `auth.py` | 🟢 100% | password hashing / policy / temp-password — **was 33%** (`test_auth.py`) |
-| `settings.py` | 🟢 100% | runtime config resolver (DB→env→default) + validators — **was 62%** (`test_settings.py`) |
-| `notifications.py` / `smtp_sender.py` | 🟢 100% / 100% | DLP-alert email delivery — **was 16% / 28%**; trigger-policy matrix, retry/cap state machine, the three encryption modes, and template rendering (`test_notifications.py`, `test_smtp_sender.py`) |
-| `config.py` / `migrations` | 🟡 62–70% | config + schema setup |
+| `dashboard.py` | 76% | Control-plane API. The uncovered share is export-endpoint error branches, scattered edge branches, and HTML template constants — the endpoint logic and RBAC gates are tested. |
+| `telemetry.py` | 75% | Metrics emission glue. |
+| `mcp_ledger.py` | 79% | Error/fallback branches of the MCP ledger writer. |
+| `dlp_policies.py` | 82% | Policy CRUD edge branches. |
+| `intent_classifier.py` | 86% | Heuristic fallback branches. |
+| `config.py` / `migrations` / `testing.py` | 68–70% | Config + schema setup glue. |
 
 Low-value, intentionally untested: `commands.py` (10%, CLI entrypoints),
-`proxy.py` (0%, 4-line shim).
+`proxy.py` (4-line shim).
 
-## Frontend — logic covered, views not
+`signing.py` is no longer part of this tree — the byte-level signing contract
+and its tests moved to the private `kyde-enterprise` package with the edition
+split, and are exercised by that repo's CI.
 
-Pure logic and shared primitives are near-complete:
+## Frontend — logic covered, deep page interactions not
 
-- `lib/` ~88% (most files 100%): `format`, `host-format`, `serial-ids`,
-  `agent-names`, `request-kind`, `session-names`, `utils`
-- `hooks/use-me` 100%, `use-debounced` covered; `api/client` covered
-- Shared components tested: `status-badge`, `trust-score`, `relative-time`,
-  `require-admin`, `mcp-server-dialog`, `users-dialog`, `date-range-picker`
+By area (statements):
 
-Untested (0%): every `pages/*.tsx` route component and `pages/settings/*.tsx`
-(sessions, agents, compliance, network-map, threats-alerts, etc.), plus
-`use-prefetch.ts` and the `action-types.ts` lookup table.
+| Area | Coverage | Notes |
+|---|---|---|
+| `lib/` | 100% | `format`, `host-format`, `serial-ids`, `agent-names`, `request-kind`, `session-names`, `utils` |
+| `pages/settings/` | 66% | settings subpages |
+| `pages/` | 51% | every route component has a test covering render/loading/empty/error states plus key interactions (`dlp-rules` add + validate, `users` roster + RBAC, `profile` password change) |
+| `components/ui` | 52% | shadcn primitives, covered incidentally |
+| `hooks/` | 36% | `use-me` 100%; `use-prefetch` and scroll hooks untested |
+| `components/shared` | 21% | tested: `status-badge`, `trust-score`, `relative-time`, `require-admin`, `mcp-server-dialog`, `users-dialog`, `date-range-picker`; the large detail-dialog/sheet components are not |
+| `api/` | 21% | `client.ts` covered; generated query helpers are not |
+| `components/layout` | 2% | app shell — exercised indirectly by page tests, only `require-admin` directly |
+
+The heaviest forensic pages (`sessions`, `threats-alerts`, `audit-log`,
+`timeline`, `policies`, `compliance`, `fleet-status`, `agent-detail`,
+`host-detail`, `agent-chains`, `agent-activity`) have mount/loading smoke
+tests; their deeper interactions (filtering, drill-downs, bulk actions) are
+the main untested surface.
+
+Reusable patterns established for page tests: hoisted mock holders for
+per-test hook returns, `importOriginal` spread to keep module constants while
+overriding hooks, child-component stubbing, and an explicit recharts stub (a
+Proxy-everything mock answers `then` and hangs the import).
 
 ---
 
 ## Priorities
 
-1. ✅ **`signing.py`** — the contract is locked for the Rust port; coverage here
-   guards the byte-level invariants ([signing contract](../README.md)). **Done**
-   to the realistic ceiling (59%): key generation/loading, Ed25519 round-trip,
-   ECDSA-P256 verify, TPM dispatch, and `get_configuration_info` are covered.
-   The uncovered remainder is `TpmSigner` hardware I/O.
-2. ✅ **`dlp.py` / `dlp_triage.py`** — core detection. **Done** (99% / 100%).
-3. ✅ **`server.py` request paths** — the data plane itself. **Done** (90%).
-   Request handler, streaming (OpenAI/Anthropic/Ollama), and the
-   routing/normalization helpers are covered; the rest is defensive glue.
-4. Frontend page components are the largest count gap but the lowest risk —
-   defer behind the backend security modules. ← next, if pursued
+1. **Frontend forensic-page interactions** — the largest remaining gap:
+   filtering/drill-down/bulk-action flows inside the big pages, plus the
+   untested shared detail dialogs/sheets.
+2. **`dashboard.py` export error branches** — low risk, but the export
+   endpoints are compliance-facing.
+3. **Layout components** (`app-shell`, `sidebar`, `notifications-bell`) —
+   cheap smoke tests would close the most visible 0% rows.

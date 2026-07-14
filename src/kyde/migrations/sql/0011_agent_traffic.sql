@@ -11,7 +11,7 @@
 -- is 'count_only' (just the counter); flipping it to 'full_logging' causes
 -- the proxy to also write a full ledger row from then on. The history table
 -- is append-only so the audit trail of mode flips survives across multiple
--- enable/disable cycles. See project memory project_per_agent_traffic_metering.md.
+-- enable/disable cycles.
 --
 -- Phase B1 (this migration) ships the tables, the counter, and the mode
 -- CRUD. Phase B2 wires mode → ledger-write behavior in the proxy.

@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* "Editorial Mono" design system (see DESIGN.md).
+/* "Editorial Mono" design system.
  *
  * Quiet, editorial language: 1px hairline borders instead of shadows,
  * monochrome blue charts, mono "eyebrow" labels, neutral-black KPI numbers,
@@ -73,7 +73,7 @@
     --brand-mist: 185 17% 88%;     /* #dae4e5 — eyebrow-chip surface */
     --brand-mist-foreground: 175 11% 23%; /* #33403f */
 
-    /* Status / State — a SEPARATE color axis from Severity (DESIGN-2 §2/§6.6).
+    /* Status / State — a SEPARATE color axis from Severity.
      * Lifecycle state (OBSERVED, IN REVIEW, VERIFIED, BLOCKED) is NOT a
      * severity and never borrows the sev palette. Raw HEX (solid badge
      * fills, no opacity modifiers needed). */
@@ -152,8 +152,8 @@
     @apply inline-flex items-center font-mono text-[11px] font-semibold uppercase tracking-[0.06em] rounded-[5px] px-2 py-[3px] border;
   }
 
-  /* Status pill — same form as .badge-sev but on the STATUS axis (DESIGN-2
-   * §6.6). Default is neutral grey; color only when the state warrants it. */
+  /* Status pill — same form as .badge-sev but on the STATUS axis.
+   * Default is neutral grey; color only when the state warrants it. */
   .badge-status {
     @apply inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] rounded-[5px] px-2 py-[3px] border;
     color: var(--status-neutral-fg);

@@ -2614,8 +2614,7 @@ async def api_agents_update(
 
 # ---------------------------------------------------------------------------
 # Per-agent traffic inventory + mode flip
-# (see migration 0011_agent_traffic.sql + project memory
-#  project_per_agent_traffic_metering.md)
+# (see migration 0011_agent_traffic.sql)
 # ---------------------------------------------------------------------------
 
 

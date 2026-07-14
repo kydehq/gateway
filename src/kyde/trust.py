@@ -1,8 +1,7 @@
 """
 Agent & Fleet Trust Score.
 
-Implements the 5-dimension trust formula (see
-`docs/agent_trust_score_signal_mapping.md`) computed entirely from data we
+Implements the 5-dimension trust formula, computed entirely from data we
 already store. The composite math is locked; the per-dimension *inputs*
 are v1 heuristics derived from existing columns.
 

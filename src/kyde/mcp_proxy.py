@@ -13,7 +13,7 @@ Scope through M2:
   * Record a signed ledger row via `mcp_ledger.record_mcp_call`.
   * Return the upstream response as-is.
 
-Deferred (later milestones in docs/plans/mcp-routing-v1.md):
+Deferred (later milestones):
   M3  Per-tool allow/deny policy enforcement (deny → outcome='blocked').
   M4  Aggregator endpoint at /mcp/ (no name).
   --- HTTP+SSE legacy transport, stdio bridge, MCP subscriptions, streaming DLP.

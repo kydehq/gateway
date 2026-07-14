@@ -2,7 +2,7 @@
 Bare-`/mcp/` aggregator — serves the union of every backend's tools and
 routes `tools/call` by `{server}__{tool}` namespace.
 
-Design constraints from docs/plans/mcp-routing-v1.md § M4:
+Design constraints:
 
   * The agent's `Authorization` header is forwarded unchanged. We never
     cache or refresh credentials. `tools/list` is served from the

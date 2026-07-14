@@ -1,7 +1,7 @@
 """Env-overridable pool sizing — _pool_min / _pool_max read from
 KYDE_DB_POOL_MIN / KYDE_DB_POOL_MAX with sensible defaults.
-Operators tune these without code changes; see
-scripts/loadtest_traffic_db.results.md for why this matters.
+Operators tune these without code changes: the connection pool,
+not the UPSERT, is the first throughput ceiling under load.
 """
 
 from __future__ import annotations

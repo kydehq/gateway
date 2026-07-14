@@ -73,7 +73,7 @@ export default {
           medium: "hsl(var(--sev-medium-fg))",
           low: "hsl(var(--sev-low-fg))",
         },
-        // Status axis fg colors (DESIGN-2 §6.6) — for dots/icons; full badges
+        // Status axis fg colors — for dots/icons; full badges
         // use the .badge-status* component classes.
         status: {
           neutral: "var(--status-neutral-fg)",

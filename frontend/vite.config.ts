@@ -40,5 +40,9 @@ export default defineConfig({
     css: false,
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     restoreMocks: true,
+    coverage: {
+      // json-summary feeds the CI coverage badge (see .github/workflows/ci.yml).
+      reporter: ["text", "json-summary"],
+    },
   },
 });

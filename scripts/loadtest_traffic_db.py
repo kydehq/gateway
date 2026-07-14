@@ -10,8 +10,8 @@ No HTTP layer, no upstream forwarding — answers the narrow question:
 rates?" If this can't sustain target throughput, no amount of proxy
 tuning helps.
 
-Workload defaults match the realistic scenario called out in
-BACKLOG.md: 100 synthetic agents, 1:10 chat:embedding ratio. We ramp
+Workload defaults match the realistic traffic scenario:
+100 synthetic agents, 1:10 chat:embedding ratio. We ramp
 worker concurrency through fixed phases and report:
   - ops/sec achieved (closed-loop, so this is the ceiling at that
     worker count)
@@ -54,7 +54,7 @@ sys.path.insert(0, os.path.join(_HERE, "..", "src"))
 
 from kyde import ledger  # noqa: E402
 
-# Workload shape — matches the BACKLOG scenario.
+# Workload shape — the realistic 1:10 chat:embedding scenario.
 N_AGENTS_DEFAULT = 100
 # Probability of picking 'chat' on each op; the rest is split across the
 # non-chat path_kinds. 1/11 ≈ 9% chat / 91% non-chat → roughly the 1:10

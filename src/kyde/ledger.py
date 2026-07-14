@@ -158,8 +158,7 @@ def _database_url() -> str:
 # Pool sizing — overridable via env so operators can tune for their
 # proxy workload without a code change. Tier 1 load tests showed the
 # default 10-slot pool caps practical per-proxy throughput well below
-# what the agent_traffic_meters UPSERT itself can sustain
-# (see scripts/loadtest_traffic_db.results.md). Reasonable production
+# what the agent_traffic_meters UPSERT itself can sustain. Reasonable production
 # values are 25–100 depending on chat:non-chat traffic mix.
 _DEFAULT_POOL_MIN = 2
 _DEFAULT_POOL_MAX = 10
@@ -1392,8 +1391,8 @@ def find_ips_for_hostname(hostname: str) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# Per-agent traffic metering — see migration 0011_agent_traffic.sql and
-# project memory project_per_agent_traffic_metering.md for the design.
+# Per-agent traffic metering — see migration 0011_agent_traffic.sql for
+# the design.
 # ---------------------------------------------------------------------------
 
 

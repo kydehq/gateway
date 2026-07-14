@@ -1,5 +1,9 @@
 # Agent Behavioral Ledger Proxy
 
+[![CI](https://github.com/kydehq/gateway/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kydehq/gateway/actions/workflows/ci.yml)
+![Backend coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/kydehq/gateway/badges/backend-coverage.json)
+![Frontend coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/kydehq/gateway/badges/frontend-coverage.json)
+
 A drop-in OpenAI-compatible proxy that produces a **cryptographically signed, hash-chained behavioral ledger** of every AI agent action.
 
 ## What it does

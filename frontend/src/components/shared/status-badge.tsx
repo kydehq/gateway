@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-// Status / State axis (DESIGN-2 §6.6) — a SEPARATE color system from severity.
+// Status / State axis — a SEPARATE color system from severity.
 // Lifecycle state is not a severity, so it never borrows the sev palette.
 //   neutral — passive/default: OBSERVED, OPEN, NEW, CLOSED, ALLOWED, DIRECT
 //   active  — running/live:    IN REVIEW, MONITORING, IN PROGRESS, CONNECTED

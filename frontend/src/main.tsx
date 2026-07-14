@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
-// Self-hosted Geist / Geist Mono (offline-friendly — see DESIGN.md §9.1).
+// Self-hosted Geist / Geist Mono (offline-friendly, no Google Fonts request).
 import "@fontsource/geist-sans/400.css";
 import "@fontsource/geist-sans/500.css";
 import "@fontsource/geist-sans/600.css";

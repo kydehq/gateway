@@ -4,7 +4,7 @@ Per-tool policy lookup with most-specific-wins precedence.
 `mcp_tool_policies` stores (server_id, agent_id, tool_name) → (decision, reason)
 rows. `*` is a literal wildcard in both `agent_id` and `tool_name`, so the
 tenant-wide default for a server is `('*', '*')`. Lookup precedence
-(declared in docs/plans/mcp-routing-v1.md and the 0013 migration):
+(declared in the 0013 migration):
 
     (server, agent, tool)  >  (server, *, tool)  >  (server, agent, *)
                            >  (server, *, *)

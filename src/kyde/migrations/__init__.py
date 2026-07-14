@@ -7,8 +7,7 @@ executed in lexicographic order, each inside its own transaction, and the
 applied version is recorded in `schema_migrations`.
 
 Chosen over Alembic so the same files can be consumed by the future Rust
-proxy port via `sqlx migrate` / `refinery` without translation. See
-project_language_split memory.
+proxy port via `sqlx migrate` / `refinery` without translation.
 """
 
 import logging

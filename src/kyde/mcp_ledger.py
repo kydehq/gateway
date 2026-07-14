@@ -3,9 +3,9 @@
 Each MCP JSON-RPC request (resolved, forwarded, or blocked) lands as a
 signed row in the existing `ledger` table. We reuse the chat-side ledger
 schema via the `action_type` discriminator and stuff per-call MCP
-metadata into the existing `tool_calls` JSONB sidecar — single signing /
-verification / export path (see docs/plans/mcp-routing-v1.md § Ledger
-entries for the rationale).
+metadata into the existing `tool_calls` JSONB sidecar — so MCP rows share
+the single signing / verification / export path instead of growing a
+parallel table.
 
 For DLP findings produced by `dlp_json_walk`, we additionally write a
 row to `dlp_alerts` with `source_type='mcp'` so the existing triage

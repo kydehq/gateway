@@ -6,8 +6,8 @@
 -- payloads; tool_calls JSONB holds the per-call MCP metadata sidecar
 -- (mcp_server_id, mcp_server_name, method, tool_name, outcome, duration_ms,
 -- dlp_finding_ids). request_kind mirrors action_type for forward compatibility
--- with existing dashboards. This keeps the signature contract single per the
--- recommendation in docs/plans/mcp-routing-v1.md § Ledger entries.
+-- with existing dashboards. This keeps the signature contract single across
+-- chat and MCP rows.
 --
 -- dlp_alerts gains four columns so the existing triage flow can surface
 -- MCP findings under a Source filter without a parallel table.

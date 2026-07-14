@@ -3,12 +3,11 @@
 -- mcp_servers is a pure routing table. There are no credential columns:
 -- the gateway is transparent on upstream auth (the agent's Authorization
 -- header is forwarded unchanged; credential handling is deliberately out
--- of scope). See docs/plans/mcp-routing-v1.md.
+-- of scope).
 --
 -- tenant_id is included from day one even though the gateway is
--- effectively single-tenant today, so the hybrid-SaaS rollout (project
--- memory project_saas_direction) doesn't need a backfill migration
--- later. Existing deploys land everything under tenant_id='default'.
+-- effectively single-tenant today, so a future multi-tenant rollout
+-- doesn't need a backfill migration later. Existing deploys land everything under tenant_id='default'.
 --
 -- mcp_tool_policies expresses per-(server, agent, tool) allow/deny.
 -- '*' wildcards are intentional in both agent_id and tool_name: a single

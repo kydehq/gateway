@@ -754,8 +754,7 @@ def _normalize_response(api_path: str, response_body: dict) -> dict:
 # ---------------------------------------------------------------------------
 # MCP routing — JSON-RPC over Streamable HTTP. Registered BEFORE the
 # catch-all proxy route below so /mcp/... isn't swallowed as an upstream
-# chat-completions path. See src/kyde/mcp_proxy.py and
-# docs/plans/mcp-routing-v1.md.
+# chat-completions path. See src/kyde/mcp_proxy.py.
 # ---------------------------------------------------------------------------
 
 

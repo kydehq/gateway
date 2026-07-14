@@ -340,7 +340,7 @@ export default function AgentChainsPage() {
         <Skeleton className="h-64 w-full" />
       ) : (
         <>
-          {/* Detail banner (DESIGN-2 §7): neutral card, no colored wash. The
+          {/* Detail banner: neutral card, no colored wash. The
               status badge stays on the neutral/status axis; a red accent badge
               appears top-right ONLY for real severity (alerts raised). A blue
               left-border marks "actively observed". A full red wash is reserved

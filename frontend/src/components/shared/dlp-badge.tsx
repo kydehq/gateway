@@ -4,7 +4,7 @@ import { StatusBadge, type StatusKind } from "@/components/shared/status-badge";
 // rows carrying a legacy enum value (claimed, in_progress, pending_info,
 // escalated) still render with a sensible fallback rather than a blank
 // badge — useful when paging through an old audit trail.
-// Status axis (DESIGN-2 §6.6), NOT severity: new/closed are passive → neutral;
+// Status axis, NOT severity: new/closed are passive → neutral;
 // in_review is live → active(blue); escalated is action-needed → bad(red).
 const DLP_KIND: Record<string, StatusKind> = {
   new:       "neutral",

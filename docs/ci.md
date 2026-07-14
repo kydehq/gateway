@@ -22,10 +22,13 @@ See also: `building-images.md` (image build details) and
 Triggers: pull request, push to `main`, and version tags.
 
 1. **Lint** (ruff / formatting).
-2. **Core test suite in sandbox mode** against a Postgres service container.
-   Nothing enterprise is installed, so `HAS_SIGNING` / `HAS_ENFORCEMENT` are
-   `False`, the edition-aware tests take their sandbox path, and the moved enterprise
-   tests are simply absent.
+2. **Core test suite in sandbox mode** against a Postgres service container,
+   with coverage. Nothing enterprise is installed, so `HAS_SIGNING` /
+   `HAS_ENFORCEMENT` are `False`, the edition-aware tests take their sandbox
+   path, and the moved enterprise tests are simply absent. On pushes to
+   `main`, backend + frontend coverage percentages are force-pushed as
+   shields.io JSON to the orphan `badges` branch, which feeds the README's
+   coverage badges.
 3. **Build + smoke the sandbox image**: `docker build --build-arg EDITION=sandbox`,
    then assert `edition() == 'sandbox'` inside the image.
 4. **On tag `vX`**: push the sandbox image to the public registry (e.g. GHCR) and

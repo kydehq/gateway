@@ -14,7 +14,7 @@ Usage:
         --proxy-url http://localhost:8000 \
         --duration 5 --workers 1,4,16,64
 
-Workload defaults match Tier 1 and the BACKLOG scenario:
+Workload defaults match Tier 1 and the realistic traffic mix:
   - 100 synthetic agents, each identified by a distinct X-API-Key
   - ~1:10 chat:embedding ratio
   - Closed-loop: each worker loops as fast as the proxy allows
