@@ -50,7 +50,7 @@ else:
 # Auth — DB-backed users with three roles (admin, viewer, auditor).
 # ---------------------------------------------------------------------------
 # Users live in the `users` table of ledger.db. The bootstrap flow (/setup)
-# creates the first admin on fresh installs. See DEPLOYMENT.md for the full
+# creates the first admin on fresh installs. See docs/deployment.md for the full
 # flow. `kyde admin create-admin` is the CLI recovery path when all
 # admins are locked out.
 

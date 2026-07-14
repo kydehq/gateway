@@ -12,7 +12,7 @@
 #       dev  → docker-compose.override.yml   (auto: local build + host ports)
 #       prod → docker-compose.prod.yml       (explicit -f: pull, loopback, limits)
 #
-# Quick reference (full matrix in DEPLOYMENT.md):
+# Quick reference (full matrix in docs/deployment.md):
 #   dev, sandbox (built locally):     docker compose up --build
 #   dev, enterprise (needs ./wheels/*.whl): docker compose --env-file .env.enterprise-dev up --build
 #   prod, enterprise:      docker compose --env-file .env.prod \

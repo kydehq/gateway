@@ -78,7 +78,7 @@ PYTHON=.venv/bin/python \
 
 The script:
 1. Starts `mock_upstream.py` on :9000.
-2. Starts the proxy on :8000 with `WITNESS_CONFIG=scripts/loadtest_config.yaml`
+2. Starts the proxy on :8000 with `KYDE_CONFIG=scripts/loadtest_config.yaml`
    so every upstream points at the mock.
 3. Waits for `/healthz`.
 4. Runs **Scenario A** — realistic mix (1:10 chat:embedding, 100 agents).

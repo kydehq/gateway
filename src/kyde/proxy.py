@@ -1,5 +1,5 @@
 """
-Witness – Agent Behavioral Ledger Proxy
+KYDE – Agent Behavioral Ledger Proxy
 ========================================
 Drop-in OpenAI-compatible proxy that signs and logs every agent interaction
 into a tamper-evident, append-only behavioral ledger.

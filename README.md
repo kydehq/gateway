@@ -22,6 +22,15 @@ Each entry is:
 - **Hash-chained** — tampering with any past entry breaks all subsequent hashes
 - **Causally linked** — captures the reasoning context (*why*) before every tool call
 
+## Documentation
+
+| Guide | Covers |
+| --- | --- |
+| [Deployment guide](docs/deployment.md) | Installing and operating the full stack — Docker Compose, editions, TLS, backups, upgrades |
+| [User manual](docs/user-manual.md) | Using the dashboard — roles, DLP alerts and policies, users, settings |
+| [Building images](docs/building-images.md) | Building the container images and the sandbox/enterprise edition split |
+| [CI](docs/ci.md) | CI and release pipelines (public and private) |
+
 ## Install
 
 ```bash
@@ -29,6 +38,10 @@ pip install -e .
 ```
 
 This installs the `kyde` CLI command.
+
+To run the full stack (proxy + dashboard UI + DLP sidecars + Postgres) with
+Docker Compose instead, see the [deployment guide](docs/deployment.md) —
+`docker compose up --build` is all it takes for a local dev stack.
 
 ## Quickstart
 
@@ -148,7 +161,7 @@ no code changes required.
 | Source | Path |
 | --- | --- |
 | Default | `config.yaml` next to `pyproject.toml` |
-| Override | Set `WITNESS_CONFIG=/absolute/path/to/config.yaml` |
+| Override | Set `KYDE_CONFIG=/absolute/path/to/config.yaml` |
 
 ### Format
 

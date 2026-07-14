@@ -1,4 +1,4 @@
-# Witness: ITIL Integration Guide for Enterprise
+# KYDE: ITIL Integration Guide for Enterprise
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -14,7 +14,7 @@
 
 ## Overview
 
-**Witness** is an append-only behavioral ledger for AI agent interactions. It provides cryptographically-signed audit trails and operational metrics that enable your enterprise to maintain governance, compliance, and visibility over LLM-based applications.
+**KYDE** is an append-only behavioral ledger for AI agent interactions. It provides cryptographically-signed audit trails and operational metrics that enable your enterprise to maintain governance, compliance, and visibility over LLM-based applications.
 
 Unlike traditional ITIL solutions focused on IT service management, kyde is a **compliance and observability layer** that allows your ITSM tools (ServiceNow, Jira Service Management, etc.) to consume structured data about AI agent behavior—enabling you to:
 
@@ -28,9 +28,9 @@ Unlike traditional ITIL solutions focused on IT service management, kyde is a **
 
 ## ITIL Alignment
 
-Witness supports **ITIL Phase 1**, which covers the minimum technical surface for ITIL compliance:
+KYDE supports **ITIL Phase 1**, which covers the minimum technical surface for ITIL compliance:
 
-| ITIL Process | Witness Component | Details |
+| ITIL Process | KYDE Component | Details |
 |---|---|---|
 | **Service Asset & Configuration Management (SACM)** | `/api/configuration` | Real-time snapshot of signing keys, algorithms, upstreams, version |
 | **IT Service Continuity Management (ITSCM)** | `/api/metrics` | Uptime, entry throughput, signature success rate, chain integrity |
@@ -60,7 +60,6 @@ Witness supports **ITIL Phase 1**, which covers the minimum technical surface fo
 - **Software (Ed25519)**: Fast, suitable for most use cases. Private key in `~/.agent-ledger/signing.key`
 - **TPM (ECDSA P-256)**: Hardware-backed, suitable for high-security environments. Private key never leaves the TPM.
 
-**Authentication**: Session-based (username/password). Credentials configurable via `WITNESS_PASSWORD` environment variable.
 
 ---
 
@@ -96,10 +95,6 @@ Both commands will:
 
 ```bash
 # Default: localhost:8501
-kyde dashboard --port 8501
-
-# With custom authentication
-export WITNESS_PASSWORD="YourSecurePassword123!"
 kyde dashboard --port 8501
 ```
 
@@ -334,7 +329,7 @@ Displays current signing mode, algorithm, fingerprint, and key locations.
 
 ### ServiceNow Integration (Example)
 
-1. **Create a MID Server endpoint** to witness `/api/metrics`
+1. **Create a MID Server endpoint** to KYDE `/api/metrics`
 2. **Set up a REST Table API** to poll `/api/metrics` every 5 minutes
 3. **Map metrics to Availability Management KPIs**:
    - `signature_success_rate` → CI Health > Application Health
@@ -359,7 +354,7 @@ import time
 while True:
     resp = requests.get(
         "http://localhost:8501/api/metrics",
-        cookies={"session": os.getenv("WITNESS_SESSION")}
+        cookies={"session": os.getenv("KYDE_SESSION")}
     )
     metrics = resp.json()
 
@@ -543,8 +538,7 @@ If `/api/metrics` shows `signature_success_rate < 0.98`:
 6. **Automate incident ingestion** into your ITSM tool within 15 minutes
 7. **Test ledger verification monthly** to catch corruption early
 8. **Document your upstream configuration** (OpenAI vs. Anthropic vs. Gemini) in your CMDB
-9. **Set WITNESS_PASSWORD securely**—use a secret manager, not environment files
-10. **Review `/api/incidents` daily** during the first 30 days post-deployment
+9. **Review `/api/incidents` daily** during the first 30 days post-deployment
 
 ---
 

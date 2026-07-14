@@ -4,7 +4,7 @@
 # New upstream names become valid path prefixes automatically, e.g.:
 #   /ollama/v1/chat/completions  →  http://localhost:11434/v1/chat/completions
 #
-# Set WITNESS_CONFIG=/path/to/config.yaml to load from a non-default location.
+# Set KYDE_CONFIG=/path/to/config.yaml to load from a non-default location.
 
 upstreams:
   anthropic:

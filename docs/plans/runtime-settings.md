@@ -132,4 +132,4 @@ Frontend:
 - 2 h — migration + resolver + tests
 - 1 h — endpoints + whitelist
 - 1 h — UI section + wire-up
-- 30 min — docs (DEPLOYMENT.md precedence table) + smoke test
+- 30 min — docs (docs/deployment.md precedence table) + smoke test
