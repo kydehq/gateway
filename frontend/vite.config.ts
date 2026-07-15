@@ -40,6 +40,9 @@ export default defineConfig({
     css: false,
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     restoreMocks: true,
+    // Vitest 4 runs test files in forked processes by default; jsdom +
+    // userEvent suites can exceed the 5s default under full parallel load.
+    testTimeout: 20000,
     coverage: {
       // json-summary feeds the CI coverage badge (see .github/workflows/ci.yml).
       reporter: ["text", "json-summary"],
