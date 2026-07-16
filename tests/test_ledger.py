@@ -17,7 +17,6 @@ import pytest
 
 from kyde import auth, ledger
 
-
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
@@ -83,7 +82,7 @@ def test_verify_chain_intact_after_appends():
 
 # NOTE: test_verify_chain_detects_tampering moved to the kyde-enterprise repo —
 # corrupting agent_id is only caught by the Ed25519 signature check, which ships
-# in the enterprise edition. The sandbox build's unsigned hash chain trusts the stored
+# in the enterprise edition. The starter build's unsigned hash chain trusts the stored
 # entry_hash, so that tamper case has no meaning here.
 
 

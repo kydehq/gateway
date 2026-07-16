@@ -1,11 +1,11 @@
-"""Sandbox-edition guarantees.
+"""Starter-edition guarantees.
 
 Two things the free image must keep true:
 
   1. With the enterprise packages (`signing.py`, `enforce/`) physically removed,
      the app still imports — no enterprise code anywhere, every feature flag off.
      Verified in a subprocess against a stripped copy of the source tree so
-     it mirrors the Docker sandbox build, not just a monkeypatched flag.
+     it mirrors the Docker starter build, not just a monkeypatched flag.
 
   2. The ledger degrades correctly when signing is absent: entries are still
      written and hash-chained, but carry an empty signature, and
@@ -21,7 +21,7 @@ from pathlib import Path
 _SRC = Path(__file__).resolve().parent.parent / "src"
 
 
-def test_sandbox_tree_imports_without_enterprise_code(tmp_path):
+def test_starter_tree_imports_without_enterprise_code(tmp_path):
     """Confirm an enterprise-code-free `kyde` tree imports with both flags False.
 
     Since the split, this repo (`kyde-gateway`) no longer ships signing.py /
@@ -38,7 +38,7 @@ def test_sandbox_tree_imports_without_enterprise_code(tmp_path):
     script. `kyde` then resolves solely to the copy, while fastapi/psycopg/etc.
     remain importable.
     """
-    tree = tmp_path / "sandbox"
+    tree = tmp_path / "starter"
     shutil.copytree(_SRC, tree)
     (tree / "kyde" / "signing.py").unlink(missing_ok=True)
     shutil.rmtree(tree / "kyde" / "enforce", ignore_errors=True)
@@ -55,11 +55,11 @@ def test_sandbox_tree_imports_without_enterprise_code(tmp_path):
         "assert u.find_spec('kyde.enforce') is None, 'enforce should be absent'\n"
         "from kyde import _features as f\n"
         "assert f.HAS_SIGNING is False and f.HAS_ENFORCEMENT is False, f.edition()\n"
-        "assert f.edition() == 'sandbox'\n"
+        "assert f.edition() == 'starter'\n"
         "import kyde.ledger as l\n"
         "assert l._HAS_SIGNING is False\n"
         "import kyde.server, kyde.dashboard, kyde.commands, kyde.pdf_export\n"
-        "print('SANDBOX_OK')\n"
+        "print('STARTER_OK')\n"
     )
     proc = subprocess.run(
         [sys.executable, "-S", "-c", script],
@@ -68,7 +68,7 @@ def test_sandbox_tree_imports_without_enterprise_code(tmp_path):
         text=True,
     )
     assert proc.returncode == 0, f"stdout={proc.stdout}\nstderr={proc.stderr}"
-    assert "SANDBOX_OK" in proc.stdout
+    assert "STARTER_OK" in proc.stdout
 
 
 def test_ledger_degrades_to_unsigned_when_signing_absent(monkeypatch):

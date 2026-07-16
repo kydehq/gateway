@@ -26,17 +26,17 @@ jobs:
     #              kyde-gateway and kyde-api services.
     #   - ui:      nginx + compiled SPA. Consumed by the kyde-ui service.
     # Both get identical tags so `TAG` in the compose env file
-    # (.env.prod / .env.sandbox) pins them together.
+    # (.env.prod / .env.starter) pins them together.
     #
     # Editions (selected via the EDITION build arg → Dockerfile):
     #   - enterprise → ghcr.io/kydehq/gateway-distribution/*  (licensed)
-    #   - sandbox    → ghcr.io/kydehq/gateway/*               (public core, this repo)
+    #   - starter    → ghcr.io/kydehq/gateway/*               (public core, this repo)
     #
     # The ENTERPRISE GATEWAY image is NOT built here. Under the package split the enterprise
     # code (kyde.signing / kyde.enforce) lives only in the private
     # gateway-enterprise repo, which builds and publishes the enterprise gateway image
     # from its own pipeline (artifact shipping — the enterprise wheel is dropped
-    # into ./wheels/ and installed). This workflow therefore builds the sandbox
+    # into ./wheels/ and installed). This workflow therefore builds the starter
     # gateway image plus BOTH editions of the UI — the UI is edition-agnostic
     # (same nginx+SPA image, just published to the licensed and public paths), so
     # it needs no enterprise code. `EDITION` is unused by frontend/Dockerfile (a
@@ -54,11 +54,11 @@ jobs:
             repo: gateway-distribution
           - image: gateway
             context: .
-            edition: sandbox
+            edition: starter
             repo: gateway
           - image: ui
             context: ./frontend
-            edition: sandbox
+            edition: starter
             repo: gateway
 
     steps:
@@ -111,7 +111,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Cache scope keys on edition too — enterprise and sandbox both build an
+          # Cache scope keys on edition too — enterprise and starter both build an
           # image named `gateway` but with different contents.
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.edition }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.edition }}

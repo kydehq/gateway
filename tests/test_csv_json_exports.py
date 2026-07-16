@@ -239,7 +239,7 @@ def test_chain_signatures_returns_verifiable_payload(client):
 
 
 def test_chain_signatures_carries_public_key(client):
-    pytest.importorskip("kyde.signing")  # enterprise feature — no public key in sandbox
+    pytest.importorskip("kyde.signing")  # enterprise feature — no public key in starter
     _seed_admin(client)
     _append()
 

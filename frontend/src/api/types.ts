@@ -468,10 +468,10 @@ export interface UpstreamEntry {
 }
 
 export interface Configuration {
-  // Edition gating. `edition` is "sandbox" (free, observe-only) or "enterprise".
-  // Sandbox images physically lack the signing/enforce packages, so the
+  // Edition gating. `edition` is "starter" (free, observe-only) or "enterprise".
+  // Starter images physically lack the signing/enforce packages, so the
   // signing-specific fields below are absent — gate UI on these flags.
-  edition: "sandbox" | "enterprise" | string;
+  edition: "starter" | "enterprise" | string;
   signing_enabled: boolean;
   enforcement_enabled: boolean;
   signing_mode: "tpm" | "software" | "disabled" | string;

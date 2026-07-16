@@ -11,7 +11,6 @@ from kyde import ledger, mcp_ledger, mcp_registry
 from kyde.dlp import DlpFinding
 from kyde.testing import append_simple
 
-
 # ---------------------------------------------------------------------------
 # _action_for / _findings_to_jsonb / now_ms
 # ---------------------------------------------------------------------------

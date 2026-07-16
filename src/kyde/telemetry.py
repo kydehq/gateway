@@ -16,7 +16,7 @@ Hard privacy rules (this product's promise is "prompts never leave the VPC"):
   * Timestamps are coarsened to the hour.
   * Every batch is Ed25519-signed with a per-deploy transport key so the
     control plane can authenticate the sender. This key is INDEPENDENT of the
-    enterprise `kyde.signing` module (absent in the sandbox edition), so the
+    enterprise `kyde.signing` module (absent in the starter edition), so the
     emitter works in both editions.
 
 Delivery is a delta: each batch covers the window since the last SUCCESSFUL
@@ -86,7 +86,7 @@ def ensure_transport_key() -> Ed25519PrivateKey:
     Idempotent and modeled on `crypto.ensure_aes_key`: atomic tmp+rename,
     0o600, refuses nothing (a malformed file raises rather than being
     silently replaced). Built on `cryptography` directly — NOT `kyde.signing`,
-    which is absent in the sandbox edition.
+    which is absent in the starter edition.
     """
     global _private_key
     if _private_key is not None:

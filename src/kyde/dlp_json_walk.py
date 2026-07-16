@@ -23,7 +23,6 @@ import httpx
 
 from . import dlp
 
-
 # Defend against pathologically nested payloads — a malicious agent could
 # in principle send a JSON tree millions of levels deep and exhaust the
 # stack. 20 covers every real-world MCP tool we've seen with margin.
@@ -88,7 +87,7 @@ async def _scan_concatenated(text: str) -> list[dlp.DlpFinding]:
     try:
         async with httpx.AsyncClient() as client:
             tasks = []
-            # Sandbox edition runs regex-only — skip bert entirely.
+            # Starter edition runs regex-only — skip bert entirely.
             if dlp.bert_enabled():
                 tasks.append(asyncio.create_task(dlp._scan_bert(client, text)))
             tasks.append(asyncio.create_task(dlp._scan_regex(client, text)))

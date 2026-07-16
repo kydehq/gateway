@@ -222,7 +222,7 @@ def _cmd_key_info():
     from . import _features
 
     if not _features.HAS_SIGNING:
-        print("Audit signing is not included in this edition (sandbox).")
+        print("Audit signing is not included in this edition (starter).")
         print("The ledger is hash-chained and tamper-evident, but unsigned.")
         return
     from .signing import (
@@ -473,7 +473,7 @@ def _cmd_ledger_show(entry_ref: str):
         sig_valid = _features.signing.verify_payload(signable, entry["signature"])
         status = "✓ VALID" if sig_valid else "✗ INVALID"
     else:
-        status = "— unsigned (sandbox edition)"
+        status = "— unsigned (starter edition)"
     print(f"  Signature   : {status}")
     print()
 
@@ -646,15 +646,13 @@ def _cmd_dlp_dedupe(args: list[str]) -> None:
     print("Scanning open DLP alerts for in-session duplicates…")
     with ledger._conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT id, alert_id, session_id, scanner, findings, created_at
                   FROM dlp_alerts
                  WHERE status <> 'closed'
                    AND session_id <> ''
                  ORDER BY session_id, id ASC
-                """
-            )
+                """)
             rows = list(cur.fetchall())
 
     by_session: dict[str, list[dict]] = {}
@@ -744,8 +742,7 @@ def _cmd_dlp_dedupe(args: list[str]) -> None:
 
 def _print_help():
     print(__doc__ if __doc__ else "")
-    print(
-        """
+    print("""
 Commands:
   keygen [--type local|tpm] [--force]  Generate signing keypair (default: local Ed25519)
   key                                  Show public key and key source (TPM or local)
@@ -770,5 +767,4 @@ Commands:
                                        subsumed by an earlier alert in the same
                                        session (disposition='duplicate').
                                        --dry-run previews without writing.
-"""
-    )
+""")

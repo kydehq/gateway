@@ -9,7 +9,7 @@ import { useFeatures } from "@/hooks/use-features";
 // this chip is the healthy-state signal.
 //
 // Integrity verification is an Enterprise feature, so this chip is hidden in
-// the sandbox edition — the EditionChip next to it carries the edition state.
+// the starter edition — the EditionChip next to it carries the edition state.
 export function ChainStatusChip() {
   const { signingEnabled } = useFeatures();
   const { data: v, isLoading } = useVerify();

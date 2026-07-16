@@ -11,7 +11,6 @@ from __future__ import annotations
 from kyde import ledger
 from kyde.ledger import _rollup_severity
 
-
 # ---------------------------------------------------------------------------
 # Unit — pure rollup function
 # ---------------------------------------------------------------------------

@@ -107,7 +107,7 @@ function deriveEvidence(
   const regexHealthy = dlpHealth?.scanners.find((s) => s.name === "regex")?.ok ?? false;
   const dlpActive = bertHealthy || regexHealthy;
   const dlpMinimizationActive = regexHealthy;
-  // Sandbox edition reports signing_mode "disabled" (a truthy string), so
+  // Starter edition reports signing_mode "disabled" (a truthy string), so
   // gate on the explicit flag — otherwise NIS-2 Art. 21 would falsely read as
   // signing-backed in the free, unsigned edition.
   const signingConfigured = config?.signing_enabled === true;

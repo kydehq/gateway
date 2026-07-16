@@ -6,7 +6,7 @@ installed*, not by stripping files:
 
 | Edition | `--build-arg` | What's installed | Runtime behavior |
 |---|---|---|---|
-| **sandbox** | `EDITION=sandbox` | `kyde-gateway` only (public core) | Unsigned, observe-only. `kyde.signing` / `kyde.enforce` are absent. |
+| **starter** | `EDITION=starter` | `kyde-gateway` only (public core) | Unsigned, observe-only. `kyde.signing` / `kyde.enforce` are absent. |
 | **enterprise** | `EDITION=enterprise` (default) | core **+** the `kyde-enterprise` wheel | Audit signing + inline enforcement active. |
 
 Both builds run **from this (`gateway`) repo root** — that's the Docker build
@@ -16,7 +16,7 @@ index** — the enterprise wheel ships as a build artifact.
 
 > Why multi-stage: the `builder` stage installs into a venv; the `runtime` stage
 > copies **only** that venv, never the source tree or the wheel file. So a
-> sandbox image carries no enterprise code in any layer, and the enterprise wheel never
+> starter image carries no enterprise code in any layer, and the enterprise wheel never
 > lands in a shipped layer.
 
 ---
@@ -33,22 +33,22 @@ index** — the enterprise wheel ships as a build artifact.
 
 ---
 
-## 2. Build the sandbox image (public core only)
+## 2. Build the starter image (public core only)
 
 Nothing extra is required — `./wheels/` stays empty (only `.gitkeep`):
 
 ```bash
 cd gateway
-docker build --build-arg EDITION=sandbox -t kyde-gateway:0.1.0-sandbox .
+docker build --build-arg EDITION=starter -t kyde-gateway:0.1.0-starter .
 ```
 
 Verify the edition inside the image:
 
 ```bash
-docker run --rm kyde-gateway:0.1.0-sandbox \
+docker run --rm kyde-gateway:0.1.0-starter \
   python -c "from kyde._features import edition, HAS_SIGNING, HAS_ENFORCEMENT; \
              print(edition(), HAS_SIGNING, HAS_ENFORCEMENT)"
-# -> sandbox False False
+# -> starter False False
 ```
 
 ---
@@ -84,7 +84,7 @@ docker build --build-arg EDITION=enterprise -t kyde-gateway:0.1.0-enterprise .
 
 If you ask for `EDITION=enterprise` but `./wheels/` has no `kyde_enterprise-*.whl`, the
 build **fails loudly** (`ERROR: EDITION=enterprise but no kyde_enterprise-*.whl found
-in ./wheels/`) rather than silently producing a sandbox image.
+in ./wheels/`) rather than silently producing a starter image.
 
 Verify:
 
@@ -106,7 +106,7 @@ docker run --rm kyde-gateway:0.1.0-enterprise sh -c \
 Both editions expose the proxy on port 8000 and start `kyde serve` by default:
 
 ```bash
-docker run --rm -p 8000:8000 kyde-gateway:0.1.0-sandbox
+docker run --rm -p 8000:8000 kyde-gateway:0.1.0-starter
 # health: GET http://127.0.0.1:8000/health
 ```
 
@@ -129,8 +129,8 @@ docker run --rm -p 8000:8000 \
 
 ## 5. Tagging, pushing, and release notes
 
-- **Tag by edition + version**, e.g. `kyde-gateway:0.1.0-sandbox` /
-  `:0.1.0-enterprise`. Push the sandbox image to your public registry and the enterprise
+- **Tag by edition + version**, e.g. `kyde-gateway:0.1.0-starter` /
+  `:0.1.0-enterprise`. Push the starter image to your public registry and the enterprise
   image to your private one:
   ```bash
   docker tag kyde-gateway:0.1.0-enterprise <registry>/kyde-gateway:0.1.0-enterprise

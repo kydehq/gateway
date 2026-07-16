@@ -39,7 +39,7 @@ beforeEach(() => {
 });
 
 describe("IntegrityPage", () => {
-  it("shows the upgrade notice when signing is disabled (sandbox)", () => {
+  it("shows the upgrade notice when signing is disabled (starter)", () => {
     h.features = { signingEnabled: false };
     renderPage();
     expect(screen.getByText(/Verifiable audit ledger/)).toBeInTheDocument();

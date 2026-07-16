@@ -16,7 +16,6 @@ from typing import Any
 
 from kyde import auth, ledger
 
-
 PASSWORD = "CorrectHorse!Battery9"
 
 

@@ -391,7 +391,7 @@ def test_configuration_snapshot(client):
     _admin(client)
     body = client.get("/api/configuration").json()
     assert body["ledger_backend"] == "postgres"
-    assert body["edition"] in ("enterprise", "sandbox")
+    assert body["edition"] in ("enterprise", "starter")
     assert "signing_enabled" in body
     # The upstream routing table is surfaced for the admin UI.
     names = {u["name"] for u in body["configured_upstreams"]}

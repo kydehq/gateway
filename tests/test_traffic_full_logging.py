@@ -13,7 +13,6 @@ from unittest.mock import Mock
 
 from kyde import ledger, server
 
-
 # ---------------------------------------------------------------------------
 # Mode cache: read-through, TTL, invalidation
 # ---------------------------------------------------------------------------

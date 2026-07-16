@@ -9,7 +9,7 @@ proxy plus its UI and DLP sidecars — on a single host, from a first
 Two **editions** of the gateway exist, selected purely by which images you
 run (see [§3](#3-the-two-knobs-edition-and-posture)):
 
-- **Public / sandbox** — `ghcr.io/kydehq/gateway/{gateway,ui}`, built from
+- **Public / starter** — `ghcr.io/kydehq/gateway/{gateway,ui}`, built from
   this repository by `.github/workflows/release-docker.yml`. Hash-chained but
   unsigned ledger, observe-only DLP.
 - **Enterprise** — `ghcr.io/kydehq/gateway-distribution/*`, licensed images
@@ -234,7 +234,7 @@ rather than deployment concerns — see the [`user manual`](./user-manual.md).
 The Compose setup is driven by **one base file** plus small overlays. Two
 independent choices decide what you run:
 
-- **Edition — sandbox vs enterprise.** Purely an *image* choice, selected by the
+- **Edition — starter vs enterprise.** Purely an *image* choice, selected by the
   `GATEWAY_REPO` env var:
   - `gateway` → `ghcr.io/kydehq/gateway/gateway` — the public core: unsigned,
     observe-only. `signing`/`enforce` are simply not installed in the image.
@@ -261,12 +261,12 @@ Files at a glance:
 | `docker-compose.override.yml` | dev overlay — local build + host ports | auto (bare `up`) |
 | `docker-compose.prod.yml` | prod overlay — pull, loopback, limits | explicit `-f` |
 | `docker-compose.regex-dev.yml` | swap in a locally-built `dlp-regex:local` | explicit `-f`, opt-in |
-| `.env.sandbox` / `.env.prod` / `.env.enterprise-dev` | edition + version selection | `--env-file` |
+| `.env.starter` / `.env.prod` / `.env.enterprise-dev` | edition + version selection | `--env-file` |
 
 Command matrix:
 
 ```bash
-# dev, sandbox edition, built from source (the default)
+# dev, starter edition, built from source (the default)
 docker compose up --build
 
 # dev, enterprise edition (needs kyde-enterprise wheel in ./wheels/)
@@ -276,8 +276,8 @@ docker compose --env-file .env.enterprise-dev up --build
 docker compose --env-file .env.prod \
   -f docker-compose.yml -f docker-compose.prod.yml up -d
 
-# prod posture on the public sandbox image (hardened free deployment)
-docker compose --env-file .env.sandbox \
+# prod posture on the public starter image (hardened free deployment)
+docker compose --env-file .env.starter \
   -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
@@ -407,7 +407,7 @@ cd gateway
 
 ### 5.2 (Optional) create a `.env` file
 
-A plain `docker compose up --build` runs the **sandbox** edition with sensible
+A plain `docker compose up --build` runs the **starter** edition with sensible
 defaults and needs no env file. Create one only to change the edition,
 thresholds, or pinned versions:
 
@@ -433,7 +433,7 @@ Never commit `.env` — it should be in `.gitignore`.
 docker compose up -d --build
 ```
 
-This builds the sandbox `kyde-gateway`/`kyde-api` images and the `kyde-ui`
+This builds the starter `kyde-gateway`/`kyde-api` images and the `kyde-ui`
 image from the repo, pulls the `dlp-regex` sidecar, and starts five services:
 
 - `kyde-gateway` — LLM proxy + `/health`, direct dev port **8081**
@@ -467,7 +467,7 @@ All services should be `healthy` within ~40 seconds (if you enabled
 
 ### 5.5 Generate signing keys (enterprise edition only)
 
-The **sandbox** edition has no signing code — its ledger is hash-chained but
+The **starter** edition has no signing code — its ledger is hash-chained but
 unsigned, so there is no key to generate. On the **enterprise** edition the
 ledger is signed with an Ed25519 key stored in the shared `kyde-store` volume.
 Run `keygen` inside either container — the other picks it up automatically:
@@ -565,7 +565,7 @@ For production hosts, merge `docker-compose.prod.yml` **on top of** the base
   files per service) are set.
 - The **edition** is chosen entirely by the env file (`GATEWAY_REPO`) — the
   same prod overlay serves the enterprise image (`.env.prod`) or the public
-  sandbox image (`.env.sandbox`) with no YAML change.
+  starter image (`.env.starter`) with no YAML change.
 
 ### Service layout (prod)
 
@@ -583,7 +583,7 @@ For production hosts, merge `docker-compose.prod.yml` **on top of** the base
 
 | Service | Image | Published by |
 | --- | --- | --- |
-| `kyde-gateway` / `kyde-api` | `ghcr.io/kydehq/${GATEWAY_REPO}/gateway:${TAG}` | sandbox → `release-docker.yml` (this repo); enterprise → the `gateway-enterprise` pipeline. |
+| `kyde-gateway` / `kyde-api` | `ghcr.io/kydehq/${GATEWAY_REPO}/gateway:${TAG}` | starter → `release-docker.yml` (this repo); enterprise → the `gateway-enterprise` pipeline. |
 | `kyde-ui` | `ghcr.io/kydehq/${GATEWAY_REPO}/ui:${TAG}` | `release-docker.yml` (both editions). |
 | `dlp-regex` / `dlp-bert` | `ghcr.io/kydehq/${DLP_REPO}/dlp-classifier-*:${DLP_*_VERSION}` | the DLP sidecar pipelines (licensed repo, both editions). |
 
@@ -591,7 +591,7 @@ For production hosts, merge `docker-compose.prod.yml` **on top of** the base
 
 ```bash
 cp .env.prod.example .env.prod        # enterprise edition
-#   ...or .env.sandbox.example        # public core, hardened
+#   ...or .env.starter.example        # public core, hardened
 # Edit it — set POSTGRES_PASSWORD (e.g. `openssl rand -base64 32`) and pin
 # TAG / DLP versions. Dashboard credentials are not env-based; create the
 # admin via /setup on first start.
@@ -758,7 +758,7 @@ docker compose cp kyde-gateway:/home/kyde/.agent-ledger \
 
 Store this somewhere only your security team can reach. If you lose it, the
 old ledger entries can still be *read*, but no new signatures will verify
-against the new key after a re-keygen. (The sandbox edition has no signing
+against the new key after a re-keygen. (The starter edition has no signing
 keys, but the same volume holds the SMTP secret key — see §2.5.)
 
 ### 7.3 Point agents at the gateway
@@ -805,7 +805,7 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-This installs the `kyde` CLI entry point (sandbox/core only — the enterprise
+This installs the `kyde` CLI entry point (starter/core only — the enterprise
 `signing`/`enforce` packages come from the separate `kyde-enterprise` wheel).
 
 ### 8.2 Generate signing keys (enterprise edition only)
@@ -967,7 +967,7 @@ primary admin, then delete `rescue` from the Users page.
 | `DLP_REPO` | `gateway-distribution` | Registry path for the DLP sidecars (licensed repo in both editions). |
 | `TAG` | `v0.3.1` | Gateway + UI image tag. |
 | `DLP_BERT_VERSION` / `DLP_REGEX_VERSION` | `v0.2.0` | DLP sidecar image tags. |
-| `EDITION` | `sandbox` | Build arg for **local** dev builds only (`sandbox` or `enterprise`); enterprise also needs `./wheels/kyde_enterprise-*.whl`. |
+| `EDITION` | `starter` | Build arg for **local** dev builds only (`starter` or `enterprise`); enterprise also needs `./wheels/kyde_enterprise-*.whl`. |
 | `POSTGRES_PASSWORD` | `kyde-dev-only` | **Set a strong value in prod.** Password for the Postgres `kyde` user. `openssl rand -base64 32`. |
 | `DATABASE_URL` | `postgresql://kyde:$POSTGRES_PASSWORD@postgres:5432/kyde` | Used by `kyde-gateway` and `kyde-api`. Override only for an external Postgres. |
 | `DLP_BERT_ENABLED` | `false` | Whether the gateway calls `dlp-bert` (pair with `--profile with-bert`). |
@@ -1086,13 +1086,13 @@ that everything is suppressed (`DLP_*_THRESHOLD=1.0` stores nothing). See the
 [`user manual`](./user-manual.md).
 
 **`POSTGRES_PASSWORD must be set` at boot.** The env file was not passed.
-Use `--env-file .env.prod` (or `.env.sandbox`) on every `docker compose`
+Use `--env-file .env.prod` (or `.env.starter`) on every `docker compose`
 invocation — or export `COMPOSE_ENV_FILE` (§6.2).
 
 **`kyde keygen` refuses to run.** A key already exists in `~/.agent-ledger/`
 (or the container volume). Re-run with `--force` only if you understand that
 signatures produced under the old key will no longer verify against the new
-public key. (Enterprise edition only — the sandbox edition does not sign.)
+public key. (Enterprise edition only — the starter edition does not sign.)
 
 **Ledger says entries don't verify after a restore.** The signing key in
 `kyde-store` was restored from a different generation than the ledger.

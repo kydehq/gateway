@@ -140,10 +140,10 @@ def _sign_pdf(pdf_without_block: bytes) -> tuple[str, str, str, str]:
     re-derive any framing convention.
     """
     sha = hashlib.sha256(pdf_without_block).hexdigest()
-    # Sandbox edition: signing is absent. The report still carries the
+    # Starter edition: signing is absent. The report still carries the
     # content hash (tamper-evidence), but no independent signature.
     if not _features.HAS_SIGNING:
-        return sha, "", "(signing disabled — sandbox edition)", "unsigned"
+        return sha, "", "(signing disabled — starter edition)", "unsigned"
     payload = {"v": 1, "sha256": sha}
     sig_b64 = _features.signing.sign_payload(payload)
     try:

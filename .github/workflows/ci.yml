@@ -165,7 +165,7 @@ jobs:
         continue-on-error: true
 
   docker-build:
-    # Public CI can only build the SANDBOX edition: the enterprise image needs the
+    # Public CI can only build the STARTER edition: the enterprise image needs the
     # proprietary kyde-enterprise wheel, which lives in the private
     # gateway-enterprise repo and is never present here. An enterprise build would hard-
     # fail on the Dockerfile's missing-wheel guard. The enterprise image is built and
@@ -178,12 +178,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build sandbox Docker image
+      - name: Build starter Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           build-args: |
-            EDITION=sandbox
+            EDITION=starter
           push: false
           load: true
           tags: kyde-proxy:test
@@ -193,7 +193,7 @@ jobs:
       - name: Smoke test edition
         run: |
           docker run --rm kyde-proxy:test \
-            python -c "from kyde._features import edition; assert edition()=='sandbox', edition()"
+            python -c "from kyde._features import edition; assert edition()=='starter', edition()"
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master

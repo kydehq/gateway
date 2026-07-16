@@ -163,7 +163,7 @@ describe("AuditLogPage — states and KPIs", () => {
     expect(screen.getByText("3")).toBeInTheDocument();
   });
 
-  it("locks the signing KPIs in the sandbox edition", () => {
+  it("locks the signing KPIs in the starter edition", () => {
     h.features = { signingEnabled: false };
     renderPage();
     expect(screen.queryByText("VERIFIED")).not.toBeInTheDocument();

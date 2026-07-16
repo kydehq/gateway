@@ -1,4 +1,4 @@
-"""Sandbox-edition tests for the incremental + TTL-cached verify_chain.
+"""Starter-edition tests for the incremental + TTL-cached verify_chain.
 
 The ledger is append-only and chain-linked, so once entries 1..N are
 verified clean they cannot become invalid. verify_chain caches the
@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from kyde import ledger
 from kyde.testing import append_simple as _append_simple
-
 
 # ---------------------------------------------------------------------------
 # Cold call populates the cache

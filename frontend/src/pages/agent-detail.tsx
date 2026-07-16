@@ -416,7 +416,7 @@ export default function AgentDetailPage() {
           <div className="flex flex-wrap gap-2">
             <EnterpriseLock
               locked={!enforcementEnabled}
-              hint="Agent blocking is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition is observe-only."
+              hint="Agent blocking is part of enforcement — available in the KYDE Enterprise edition. The starter edition is observe-only."
             >
               <Button
                 variant="outline"
@@ -429,7 +429,7 @@ export default function AgentDetailPage() {
             </EnterpriseLock>
             <EnterpriseLock
               locked={!enforcementEnabled}
-              hint="Agent blocking is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition is observe-only."
+              hint="Agent blocking is part of enforcement — available in the KYDE Enterprise edition. The starter edition is observe-only."
             >
               <Button
                 variant="outline"

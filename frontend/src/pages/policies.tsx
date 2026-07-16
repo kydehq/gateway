@@ -186,7 +186,7 @@ function PreventionCard({ isAdmin }: { isAdmin: boolean }) {
         </div>
         <EnterpriseLock
           locked={!enforcementEnabled}
-          hint="Inline blocking (prevention) is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition detects and alerts only."
+          hint="Inline blocking (prevention) is part of enforcement — available in the KYDE Enterprise edition. The starter edition detects and alerts only."
         >
         <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-2">
@@ -256,7 +256,7 @@ function PreventionCard({ isAdmin }: { isAdmin: boolean }) {
       </div>
       {!enforcementEnabled ? (
         <p className="mt-2 text-xs text-muted-foreground">
-          Detection and alerts run in the sandbox edition; inline blocking
+          Detection and alerts run in the starter edition; inline blocking
           (prevention) is available in the KYDE Enterprise edition.
         </p>
       ) : readOnly ? (
@@ -500,7 +500,7 @@ export default function PoliciesPage() {
                       <TableCell className="text-right">
                         <EnterpriseLock
                           locked={!enforcementEnabled}
-                          hint="Inline blocking (prevention) is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition detects and alerts only."
+                          hint="Inline blocking (prevention) is part of enforcement — available in the KYDE Enterprise edition. The starter edition detects and alerts only."
                         >
                           <Switch
                             checked={p.prevention}

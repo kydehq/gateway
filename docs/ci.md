@@ -1,10 +1,10 @@
-# CI: running the sandbox and enterprise pipelines
+# CI: running the starter and enterprise pipelines
 
 The edition boundary **is** the repo boundary, so CI is two pipelines, each
 proving one thing:
 
 - **Public `gateway` CI** proves the OSS core stands alone. It cannot see the
-  enterprise code, so a green run *is* the guarantee that the sandbox edition works
+  enterprise code, so a green run *is* the guarantee that the starter edition works
   with zero enterprise dependencies.
 - **Private `gateway-enterprise` CI** proves the enterprise composition. It pulls the
   core in and tests both packages merged into the one `kyde` namespace package.
@@ -17,26 +17,26 @@ See also: `building-images.md` (image build details) and
 
 ---
 
-## Public `gateway` pipeline — sandbox edition
+## Public `gateway` pipeline — starter edition
 
 Triggers: pull request, push to `main`, and version tags.
 
 1. **Lint** (ruff / formatting).
-2. **Core test suite in sandbox mode** against a Postgres service container,
+2. **Core test suite in starter mode** against a Postgres service container,
    with coverage. Nothing enterprise is installed, so `HAS_SIGNING` /
-   `HAS_ENFORCEMENT` are `False`, the edition-aware tests take their sandbox
+   `HAS_ENFORCEMENT` are `False`, the edition-aware tests take their starter
    path, and the moved enterprise tests are simply absent. On pushes to
    `main`, backend + frontend coverage percentages are force-pushed as
    shields.io JSON to the orphan `badges` branch, which feeds the README's
    coverage badges.
-3. **Build + smoke the sandbox image**: `docker build --build-arg EDITION=sandbox`,
-   then assert `edition() == 'sandbox'` inside the image.
-4. **On tag `vX`**: push the sandbox image to the public registry (e.g. GHCR) and
+3. **Build + smoke the starter image**: `docker build --build-arg EDITION=starter`,
+   then assert `edition() == 'starter'` inside the image.
+4. **On tag `vX`**: push the starter image to the public registry (e.g. GHCR) and
    publish the `kyde-gateway` wheel as a release artifact so the private
    pipeline can consume a pinned version.
 
 Because the public repo has no enterprise code, this pipeline *only* ever exercises the
-sandbox edition — that is intentional, not a gap.
+starter edition — that is intentional, not a gap.
 
 ---
 
@@ -116,14 +116,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - run: uv run --python 3.14 --extra test pytest -q
-  sandbox-image:
+  starter-image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build --build-arg EDITION=sandbox -t kyde-gateway:sandbox .
+      - run: docker build --build-arg EDITION=starter -t kyde-gateway:starter .
       - run: >-
-          docker run --rm kyde-gateway:sandbox
-          python -c "from kyde._features import edition; assert edition()=='sandbox'"
+          docker run --rm kyde-gateway:starter
+          python -c "from kyde._features import edition; assert edition()=='starter'"
 ```
 
 ### `gateway-enterprise/.github/workflows/ci.yml`

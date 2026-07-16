@@ -684,7 +684,7 @@ export default function ThreatsAlertsPage() {
                         })()}
                         <EnterpriseLock
                           locked={!enforcementEnabled}
-                          hint="Agent blocking is part of enforcement — available in the KYDE Enterprise edition. The sandbox edition is observe-only."
+                          hint="Agent blocking is part of enforcement — available in the KYDE Enterprise edition. The starter edition is observe-only."
                         >
                           <Button
                             variant="outline"

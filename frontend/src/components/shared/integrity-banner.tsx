@@ -9,7 +9,7 @@ import { ShieldAlert } from "lucide-react";
 // The green "intact" signal lives in the sidebar as a small chip.
 //
 // Integrity verification is Enterprise-only, so the banner never fires in the
-// sandbox edition.
+// starter edition.
 export function IntegrityBanner() {
   const { signingEnabled } = useFeatures();
   const { data: v, isLoading } = useVerify();

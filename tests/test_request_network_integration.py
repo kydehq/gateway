@@ -16,7 +16,6 @@ from typing import Any, Optional
 
 from kyde import ledger, network_origin
 
-
 # ---------------------------------------------------------------------------
 # Minimal Request stand-in mirroring Starlette's surface.
 # ---------------------------------------------------------------------------

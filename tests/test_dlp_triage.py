@@ -19,7 +19,6 @@ import pytest
 from kyde import auth, dlp_triage, ledger
 from kyde.dlp_triage import TransitionError, assert_allowed
 
-
 # ---------------------------------------------------------------------------
 # Pure: enumerations + transition matrix
 # ---------------------------------------------------------------------------

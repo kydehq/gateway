@@ -2,13 +2,13 @@
 # `docker compose up`. The ONLY file that builds locally and publishes to the
 # host. Prod names its -f files explicitly, which suppresses this override.
 #
-#   docker compose up --build                         # sandbox, built from source
+#   docker compose up --build                         # starter, built from source
 #   docker compose --env-file .env.enterprise-dev up --build # enterprise (needs ./wheels/*.whl)
 #   docker compose --profile dev up --build           # + mailpit + validator
 #
 # `ports` here ADD to the base `expose` (compose concatenates port lists across
 # files), giving direct host access for local curling and Vite's hot-reload
-# proxy. Edition of the local build is ${EDITION:-sandbox}; enterprise also needs the
+# proxy. Edition of the local build is ${EDITION:-starter}; enterprise also needs the
 # kyde-enterprise wheel in ./wheels/ (see docs/building-images.md).
 
 services:
@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        EDITION: ${EDITION:-sandbox}
+        EDITION: ${EDITION:-starter}
     ports:
       - "8081:8000"
 
@@ -31,7 +31,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        EDITION: ${EDITION:-sandbox}
+        EDITION: ${EDITION:-starter}
     ports:
       - "8501:8501"
 

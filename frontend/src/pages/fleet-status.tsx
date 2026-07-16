@@ -71,7 +71,7 @@ export default function FleetStatusPage() {
 
   const operationalStatus: "BREACH" | "WARNING" | "OPERATIONAL" = useMemo(() => {
     // Integrity verification is an Enterprise feature — only let it drive the
-    // breach state when signing is enabled. In the sandbox edition, status is driven by
+    // breach state when signing is enabled. In the starter edition, status is driven by
     // detection alerts alone.
     if ((signingEnabled && verify?.valid === false) || criticalAlerts.length > 0)
       return "BREACH";

@@ -28,7 +28,6 @@ from fastapi import HTTPException, Query
 from . import ledger
 from .dashboard import app
 
-
 # ---------------------------------------------------------------------------
 # Window mapping
 # ---------------------------------------------------------------------------

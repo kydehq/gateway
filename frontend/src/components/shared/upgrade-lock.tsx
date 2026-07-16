@@ -11,7 +11,7 @@ import {
 import { useFeatures } from "@/hooks/use-features";
 import { cn } from "@/lib/utils";
 
-// Conversion-oriented gating for Enterprise-only controls in the sandbox
+// Conversion-oriented gating for Enterprise-only controls in the starter
 // edition. Rather than hiding enterprise features (which makes the upgrade
 // invisible), we LOCK them: the control stays on screen, greyed and
 // non-interactive, clearly marked "Enterprise only". The visible-but-locked
@@ -64,13 +64,13 @@ export function EnterpriseLock({
 export const UPGRADE_URL = "https://kyde.com/pricing/";
 
 /**
- * Pinned sidebar upsell. Renders nothing in the enterprise edition; in the sandbox edition it
+ * Pinned sidebar upsell. Renders nothing in the enterprise edition; in the starter edition it
  * shows an always-visible card naming what Enterprise unlocks plus a CTA to
  * the pricing page. This is the primary, low-noise conversion surface.
  */
 export function UpgradeCard() {
-  const { isSandbox } = useFeatures();
-  if (!isSandbox) return null;
+  const { isStarter } = useFeatures();
+  if (!isStarter) return null;
   const unlocks = [
     "Inline enforcement",
     "Signed audit ledger",
@@ -80,7 +80,7 @@ export function UpgradeCard() {
     <div className="m-2 rounded-lg border border-brand-yellow/30 bg-brand-yellow/5 p-3">
       <div className="mb-1 flex items-center gap-1.5 text-sm font-semibold">
         <Sparkles className="h-3.5 w-3.5 text-brand-yellow" />
-        KYDE Sandbox
+        KYDE Starter
       </div>
       <p className="text-[11px] text-muted-foreground">
         Observe-only. Enterprise unlocks:
@@ -196,7 +196,7 @@ export function UpgradeNotice({
       </div>
       <p className="mx-auto max-w-md text-sm text-muted-foreground">
         {children ??
-          "This feature is part of KYDE Enterprise. The sandbox edition runs in observe-only mode — detection and alerts work, but enforcement and independent audit signing require an upgrade."}
+          "This feature is part of KYDE Enterprise. The starter edition runs in observe-only mode — detection and alerts work, but enforcement and independent audit signing require an upgrade."}
       </p>
       <a
         href={UPGRADE_URL}
