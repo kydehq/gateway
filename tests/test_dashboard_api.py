@@ -386,7 +386,7 @@ def test_entry_detail_redacts_content_for_non_auditors(client):
     assert detail["why_parsed"] == []
     assert detail["full_messages_parsed"] == []
     # Signature verification happens before redaction. In the enterprise edition
-    # rows are signed so this stays True; the sandbox build is unsigned, so
+    # rows are signed so this stays True; the starter build is unsigned, so
     # there is no signature to validate and the field is None.
     assert detail["signature_valid"] is (True if HAS_SIGNING else None)
 

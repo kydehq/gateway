@@ -42,7 +42,7 @@ import importlib.util as _importlib_util
 from . import migrations
 
 # Signing is an enterprise feature and ships as a removable module. When absent
-# (sandbox edition) the ledger still writes — entries are hash-chained
+# (starter edition) the ledger still writes — entries are hash-chained
 # (tamper-evident) but carry an empty signature instead of an independent
 # Ed25519/TPM attestation. Guarded locally rather than via `_features` to
 # keep `ledger` the lowest layer and avoid an import cycle. We gate on
@@ -583,7 +583,7 @@ def verify_chain(record: bool = True) -> tuple[bool, list[str]]:
             )
             chain_breaks += 1
             entry_ok = False
-        # Unsigned entries (sandbox edition, or empty signature) are
+        # Unsigned entries (starter edition, or empty signature) are
         # chain-verified only — a missing independent signature is not a
         # tamper failure. Signature checks run only when signing shipped
         # and the row actually carries one.
@@ -1150,7 +1150,7 @@ def list_session_summaries(
 
 # Agent block-list functions (is_agent_blocked / block_agent / unblock_agent
 # / list_agent_blocks) are an enterprise enforcement feature and now live in
-# kyde/enforce/blocklist.py — physically absent from the sandbox image.
+# kyde/enforce/blocklist.py — physically absent from the starter image.
 # The `agent_blocks` table itself stays in core (every edition migrates it).
 
 

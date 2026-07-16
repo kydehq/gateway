@@ -8,8 +8,8 @@
 #     -f docker-compose.yml -f docker-compose.prod.yml --profile validator up -d
 #
 # Edition is chosen by the env file (GATEWAY_REPO), NOT this file — so the SAME
-# posture serves the enterprise image (.env.prod) or the public sandbox image
-# (.env.sandbox) with zero YAML changes.
+# posture serves the enterprise image (.env.prod) or the public starter image
+# (.env.starter) with zero YAML changes.
 #
 # Deltas vs base: pull-only (no build), restart:always, resource limits + log
 # rotation on every service, and host publishing restricted to the UI on

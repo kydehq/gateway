@@ -1,6 +1,6 @@
 """Tests for the enterprise signing bodies of `kyde keygen` / `kyde key`.
 
-The sandbox build ships without `kyde.signing`, so tests/test_cli_commands.py
+The starter build ships without `kyde.signing`, so tests/test_cli_commands.py
 can only pin the early-return messages. Here we install a fake signing module
 into sys.modules and flip the `_features.HAS_SIGNING` seam so the real CLI
 logic — flag parsing, --force handling, TPM probing, audit logging — runs

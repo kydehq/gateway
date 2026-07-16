@@ -222,7 +222,7 @@ def _cmd_key_info():
     from . import _features
 
     if not _features.HAS_SIGNING:
-        print("Audit signing is not included in this edition (sandbox).")
+        print("Audit signing is not included in this edition (starter).")
         print("The ledger is hash-chained and tamper-evident, but unsigned.")
         return
     from .signing import (
@@ -473,7 +473,7 @@ def _cmd_ledger_show(entry_ref: str):
         sig_valid = _features.signing.verify_payload(signable, entry["signature"])
         status = "✓ VALID" if sig_valid else "✗ INVALID"
     else:
-        status = "— unsigned (sandbox edition)"
+        status = "— unsigned (starter edition)"
     print(f"  Signature   : {status}")
     print()
 

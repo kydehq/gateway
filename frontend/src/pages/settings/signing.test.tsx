@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 
 describe("SettingsSigningPage", () => {
-  it("shows the upgrade notice in the sandbox edition", () => {
+  it("shows the upgrade notice in the starter edition", () => {
     h.config = { data: {}, isLoading: false };
     h.features = { signingEnabled: false };
     render(<SettingsSigningPage />);

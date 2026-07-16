@@ -5,4 +5,4 @@
 #   cp ../gateway-enterprise/dist/kyde_enterprise-*.whl ./wheels/
 #
 # The wheel is PROPRIETARY — it is gitignored and must never be committed to
-# this (public) repo. This directory stays empty for sandbox builds.
+# this (public) repo. This directory stays empty for starter builds.

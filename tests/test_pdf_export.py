@@ -47,7 +47,7 @@ def _verify_bundle(bundle: pdf_export.PdfBundle) -> None:
     """The bundle's signature is over `{v:1, sha256:<hex>}` of the pre-block
     PDF bytes. We can re-verify against the public key on disk.
 
-    Signing is an enterprise feature (kyde-enterprise); in the sandbox edition the
+    Signing is an enterprise feature (kyde-enterprise); in the starter edition the
     module is absent and the bundle is unsigned, so skip the verification.
     Rendering still ran before this point, so the render path stays exercised.
     """

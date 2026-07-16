@@ -276,12 +276,12 @@ describe("PoliciesPage — prevention card & bulk actions", () => {
     );
   });
 
-  it("shows the sandbox note when enforcement is unavailable", () => {
+  it("shows the starter note when enforcement is unavailable", () => {
     h.features = { enforcementEnabled: false };
     h.policies.data = [];
     renderPage();
     expect(
-      screen.getByText(/Detection and alerts run in the sandbox edition/),
+      screen.getByText(/Detection and alerts run in the starter edition/),
     ).toBeInTheDocument();
     expect(screen.getAllByText("Enterprise").length).toBeGreaterThan(0);
   });

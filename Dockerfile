@@ -10,7 +10,7 @@
 # the SPA shell and /assets/ moved out.
 #
 # Two editions = which distributions get installed (no file-stripping):
-#   --build-arg EDITION=sandbox    free image: installs only the public core
+#   --build-arg EDITION=starter    free image: installs only the public core
 #                                  (kyde-gateway). kyde.signing / kyde.enforce
 #                                  are never installed, so the unsigned,
 #                                  observe-only gateway is all that exists.
@@ -46,15 +46,15 @@ ARG EDITION=enterprise
 # Enterprise edition ships kyde-enterprise as a BUILD ARTIFACT, not from a private
 # index: drop kyde_enterprise-*.whl into ./wheels/ before building. The wheel is
 # consumed in this builder stage only — the runtime image copies just the
-# installed venv, so the wheel file never lands in a shipped layer. For sandbox
+# installed venv, so the wheel file never lands in a shipped layer. For starter
 # builds ./wheels/ is simply empty (only .gitkeep).
 COPY wheels/ /tmp/wheels/
 
 # Core (kyde-gateway) always installs from this repo. Enterprise additionally
 # installs the local kyde-enterprise wheel, dropping kyde.signing + kyde.enforce
-# into the shared `kyde` namespace package. Sandbox installs core only —
+# into the shared `kyde` namespace package. Starter installs core only —
 # find_spec then reports both features absent at runtime. An enterprise build
-# with no wheel present is a hard error rather than a silent sandbox image, and
+# with no wheel present is a hard error rather than a silent starter image, and
 # any unknown EDITION fails loudly.
 RUN pip install --upgrade pip && pip install . && \
     if [ "$EDITION" = "enterprise" ]; then \
@@ -62,10 +62,12 @@ RUN pip install --upgrade pip && pip install . && \
             { echo "ERROR: EDITION=enterprise but no kyde_enterprise-*.whl found in ./wheels/"; exit 1; }; \
         echo "==> ENTERPRISE edition: installing kyde-enterprise wheel from ./wheels/"; \
         pip install /tmp/wheels/kyde_enterprise-*.whl; \
+    elif [ "$EDITION" = "starter" ]; then \
+        echo "==> STARTER edition: core only (no enterprise packages installed)"; \
     elif [ "$EDITION" = "sandbox" ]; then \
-        echo "==> SANDBOX edition: core only (no enterprise packages installed)"; \
+        echo "ERROR: EDITION=sandbox was renamed — use EDITION=starter"; exit 1; \
     else \
-        echo "ERROR: unknown EDITION=$EDITION (expected 'enterprise' or 'sandbox')"; exit 1; \
+        echo "ERROR: unknown EDITION=$EDITION (expected 'enterprise' or 'starter')"; exit 1; \
     fi
 
 # ---- runtime ---------------------------------------------------------------
@@ -83,7 +85,7 @@ ENV KYDE_EDITION=${EDITION}
 WORKDIR /app
 
 # Only the installed virtualenv crosses over — NOT the source tree — so a
-# sandbox image carries no enterprise source in any layer.
+# starter image carries no enterprise source in any layer.
 COPY --from=builder /opt/venv /opt/venv
 
 # Bundled DLP regex patterns — the gateway is the source of truth for the

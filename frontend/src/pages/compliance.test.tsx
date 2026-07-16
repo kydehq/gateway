@@ -135,7 +135,7 @@ describe("CompliancePage — status hero and KPIs", () => {
     expect(screen.getByText("hash mismatch at seq 5")).toBeInTheDocument();
   });
 
-  it("locks signing panels in the sandbox edition", () => {
+  it("locks signing panels in the starter edition", () => {
     h.features = { signingEnabled: false };
     renderPage();
     // LockedMetric tiles replace the live KPIs.

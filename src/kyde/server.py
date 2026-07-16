@@ -810,7 +810,7 @@ async def proxy(request: Request, path: str):
         print(f"  ⚠ traffic meter UPSERT failed: {_meter_err}")
 
     # Block-list enforcement is an enterprise feature (kyde/enforce). In the
-    # sandbox edition the package is absent, so this guard is skipped and
+    # starter edition the package is absent, so this guard is skipped and
     # no agent is ever blocked.
     if _features.HAS_ENFORCEMENT and _features.enforce.is_agent_blocked(agent_id):
         return _features.enforce.serve_agent_block(
@@ -1049,7 +1049,7 @@ async def proxy(request: Request, path: str):
 
 
 # _serve_dlp_block moved to kyde/enforce/handler.py (serve_dlp_block) —
-# it is enterprise enforcement code and must be absent from the sandbox image.
+# it is enterprise enforcement code and must be absent from the starter image.
 
 
 async def _handle_streaming(

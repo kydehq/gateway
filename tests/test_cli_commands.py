@@ -4,7 +4,7 @@ Everything runs against the test Postgres from kyde.testing — the CLI talks
 to the same ledger module as the servers. Output is asserted via capsys.
 
 The signing-specific bodies of `keygen`/`key` are enterprise-only; in the
-sandbox build (`kyde.signing` absent) both commands take the early-return
+starter build (`kyde.signing` absent) both commands take the early-return
 path, which is what these tests pin down.
 """
 
@@ -16,8 +16,8 @@ from kyde import commands, ledger
 from kyde._features import HAS_SIGNING
 from kyde.testing import append_simple, seed_user
 
-sandbox_only = pytest.mark.skipif(
-    HAS_SIGNING, reason="sandbox-edition CLI output only"
+starter_only = pytest.mark.skipif(
+    HAS_SIGNING, reason="starter-edition CLI output only"
 )
 
 
@@ -78,20 +78,20 @@ def test_run_cli_entry_uses_argv(capsys, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# keygen / key — sandbox edition paths
+# keygen / key — starter edition paths
 # ---------------------------------------------------------------------------
 
 
-@sandbox_only
-def test_keygen_sandbox_message(capsys):
+@starter_only
+def test_keygen_starter_message(capsys):
     commands.run_cli(["keygen"])
     out = capsys.readouterr().out
     assert "enterprise feature" in out
     assert "No keys to generate" in out
 
 
-@sandbox_only
-def test_key_info_sandbox_message(capsys):
+@starter_only
+def test_key_info_starter_message(capsys):
     commands.run_cli(["key"])
     out = capsys.readouterr().out
     assert "not included in this edition" in out

@@ -10,7 +10,7 @@ export default function IntegrityPage() {
   const { signingEnabled } = useFeatures();
 
   // The verifiable audit ledger (cryptographic integrity verification +
-  // signatures) is an Enterprise feature. The sandbox edition is
+  // signatures) is an Enterprise feature. The starter edition is
   // observe-only, so this page is locked behind an upgrade notice.
   if (!signingEnabled) {
     return (
@@ -21,7 +21,7 @@ export default function IntegrityPage() {
         />
         <UpgradeNotice title="Verifiable audit ledger">
           Cryptographic integrity verification and signed audit records are part
-          of the KYDE Enterprise edition. The sandbox edition runs in
+          of the KYDE Enterprise edition. The starter edition runs in
           observe-only mode — detection and alerts work, but the tamper-proof,
           independently verifiable audit ledger requires an upgrade.
         </UpgradeNotice>

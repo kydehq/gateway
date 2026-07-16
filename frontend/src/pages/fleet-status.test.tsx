@@ -175,7 +175,7 @@ describe("FleetStatusPage — status banner", () => {
     expect(screen.getByText("BREACH")).toBeInTheDocument();
   });
 
-  it("ignores verification and locks the integrity KPI in the sandbox edition", () => {
+  it("ignores verification and locks the integrity KPI in the starter edition", () => {
     h.features = { signingEnabled: false };
     h.verify = { data: { ...goodVerify, valid: false } as Verify, isLoading: false };
     renderPage();

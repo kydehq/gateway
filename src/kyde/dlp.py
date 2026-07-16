@@ -26,7 +26,7 @@ DLP_TIMEOUT = 5.0  # seconds — keep well below typical LLM latency
 
 def bert_enabled() -> bool:
     """Whether the BERT classifier sidecar is deployed alongside this
-    gateway. The sandbox edition ships regex-only (DLP_BERT_ENABLED=false),
+    gateway. The starter edition ships regex-only (DLP_BERT_ENABLED=false),
     so the gateway must neither call nor health-check bert — otherwise every
     request pays a fail-open round-trip and the status panel reads
     'unhealthy'. This is a deployment fact, not a runtime knob, so it's read
@@ -170,7 +170,7 @@ async def health_check() -> dict:
     """
     async with httpx.AsyncClient() as client:
         probes = []
-        # Sandbox edition is regex-only — don't probe (or fail on) bert.
+        # Starter edition is regex-only — don't probe (or fail on) bert.
         if bert_enabled():
             probes.append(_check_health(client, "bert", DLP_BERT_URL))
         probes.append(_check_health(client, "regex", DLP_REGEX_URL))
@@ -323,7 +323,7 @@ async def scan_text(text: str) -> list[DlpFinding]:
     try:
         async with httpx.AsyncClient() as client:
             tasks = []
-            # Sandbox edition runs regex-only — skip bert entirely.
+            # Starter edition runs regex-only — skip bert entirely.
             if bert_enabled():
                 tasks.append(asyncio.create_task(_scan_bert(client, text)))
             tasks.append(asyncio.create_task(_scan_regex(client, text)))

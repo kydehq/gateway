@@ -23,7 +23,7 @@ export default function SettingsSigningPage() {
         <Skeleton className="h-48" />
       ) : !signingEnabled ? (
         <UpgradeNotice title="Independent audit signing">
-          The sandbox edition keeps the ledger hash-chained and
+          The starter edition keeps the ledger hash-chained and
           tamper-evident, but cryptographic signing keys (Ed25519 / TPM) are a
           enterprise feature. Upgrade to KYDE Enterprise for independently verifiable,
           signed audit records.

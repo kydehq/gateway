@@ -36,7 +36,7 @@ from . import (
 from . import settings as settings_module
 from . import _features
 
-# Signing is an enterprise feature shipped as a removable module. In the sandbox
+# Signing is an enterprise feature shipped as a removable module. In the starter
 # edition it is absent; keep the names defined as no-op fallbacks so this
 # module imports, and guard every use with _features.HAS_SIGNING.
 if _features.HAS_SIGNING:
@@ -706,7 +706,7 @@ def api_export_compliance_report(session: str | None = Cookie(None)):
         except FileNotFoundError:
             fp = "(no public key on file)"
     else:
-        fp = "(signing disabled — sandbox edition)"
+        fp = "(signing disabled — starter edition)"
     valid, errors = ledger.verify_chain(record=False)
     total = ledger.count_entries()
     sig_failures = sum(1 for e in errors if "Invalid signature" in e)
@@ -1078,7 +1078,7 @@ def api_entry(entry_ref: str, session: str | None = Cookie(None)):
         except Exception:
             e["signature_valid"] = False
     else:
-        # Sandbox edition / unsigned entry: chain-verified only.
+        # Starter edition / unsigned entry: chain-verified only.
         e["signature_valid"] = None
 
     e["total_entries"] = ledger.count_entries()
@@ -1215,7 +1215,7 @@ def api_fleet_trust(
     Computes the 5-dimension formula (see `trust.py`) from existing
     signals — DLP alerts, policy blocks, tool patterns, request outcomes,
     token efficiency, and chain verification. `window` accepts
-    1h / 24h / 7d / 30d / 90d / all. The score renders even in the sandbox
+    1h / 24h / 7d / 30d / 90d / all. The score renders even in the starter
     edition (signing off): Compliance falls back to an audit-trail baseline.
     """
     if not _session_ctx(session):
@@ -2505,7 +2505,7 @@ def api_agent_blocks_list(session: str | None = Cookie(None)):
     if not _session_ctx(session):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     if not _features.HAS_ENFORCEMENT:
-        # Sandbox edition: no enforcement, so there is no block list.
+        # Starter edition: no enforcement, so there is no block list.
         return []
     rows = _features.enforce.list_agent_blocks()
     return [
@@ -3374,7 +3374,7 @@ async def api_dlp_policies_update(
             },
             status_code=400,
         )
-    # Prevention is enforcement. Sandbox images ship without the `enforce`
+    # Prevention is enforcement. Starter images ship without the `enforce`
     # package, so the prevention flag must not be settable — detection
     # (`enabled`) stays available. Defence-in-depth behind the locked UI.
     if has_prevention and not _features.HAS_ENFORCEMENT:
@@ -3538,7 +3538,7 @@ def _audit_setting_change(
 # the UI can render "••••••••" vs empty.
 _REDACTED_SETTING_KEYS = {"SMTP_PASSWORD_ENC"}
 
-# Global prevention master switches — enforcement controls that the sandbox
+# Global prevention master switches — enforcement controls that the starter
 # edition (no `enforce` package) must refuse to set. See api_settings_update.
 _ENFORCEMENT_SETTING_KEYS = {"DLP_REGEX_PREVENTION", "DLP_BERT_PREVENTION"}
 
@@ -3579,7 +3579,7 @@ async def api_settings_update(
     if key not in settings_module.SPECS:
         return JSONResponse({"error": "unknown_key"}, status_code=404)
     # The global prevention master switches are enforcement controls. In the
-    # sandbox edition (no `enforce` package) they must not be settable, even
+    # starter edition (no `enforce` package) they must not be settable, even
     # via a direct API call past the locked UI. Defence-in-depth.
     if key in _ENFORCEMENT_SETTING_KEYS and not _features.HAS_ENFORCEMENT:
         return JSONResponse(

@@ -91,7 +91,7 @@ def bootstrap() -> None:
     Call this at the very top of ``tests/conftest.py``, before any ``kyde``
     submodule is imported for use. Signing-key setup only runs when the enterprise
     ``kyde.signing`` package is present (enterprise edition / enterprise repo); the
-    sandbox core build runs unsigned and skips it.
+    starter core build runs unsigned and skips it.
     """
     _ensure_test_db()
     os.environ["DATABASE_URL"] = TEST_DATABASE_URL

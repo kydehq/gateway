@@ -178,7 +178,7 @@ function MetadataTab({
 }) {
   const alerts = e.dlp_alerts ?? [];
   // Tri-state, not a boolean: an entry with NO signature is "unsigned"
-  // (sandbox edition — hash-chained but not cryptographically signed), which
+  // (starter edition — hash-chained but not cryptographically signed), which
   // is a benign, expected state — not a verification failure. Only show the
   // red "invalid" when a signature is actually present and fails to verify.
   const signed = !!e.signature;

@@ -67,14 +67,14 @@ only the UI is published — loopback-only, production posture out of the box.
 git clone https://github.com/kydehq/gateway.git
 cd gateway
 
-cp .env.sandbox.example .env.sandbox
-# Edit .env.sandbox: set POSTGRES_PASSWORD (e.g. `openssl rand -base64 32`)
+cp .env.starter.example .env.starter
+# Edit .env.starter: set POSTGRES_PASSWORD (e.g. `openssl rand -base64 32`)
 
-docker compose --env-file .env.sandbox \
+docker compose --env-file .env.starter \
   -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
-> ⚠️ Keep the file named `.env.sandbox` — do **not** copy it to `.env`.
+> ⚠️ Keep the file named `.env.starter` — do **not** copy it to `.env`.
 > Compose auto-loads `.env` into *every* invocation, including the dev stack,
 > and `POSTGRES_PASSWORD` only takes effect when the Postgres volume is first
 > created — changing it later locks the services out of an existing database.
@@ -129,14 +129,14 @@ That's the whole pitch in one screen. From here: TLS, backups, upgrades, and
 the optional neural-DLP / validator services are in the
 [deployment guide](docs/deployment.md).
 
-> **This is our public sandbox — we want your feedback.**
+> **This is our public Starter release — we want your feedback.**
 > Broke during setup? Missing a provider? Wondering whether you'd ever
 > flip enforcement on? [Open an issue](../../issues/new/choose) or write
 > us: **feedback@kyde.com**. We read everything.
 
 ## Editions
 
-The quickstart above runs the **sandbox** edition — this repo's public images:
+The quickstart above runs the **starter** edition — this repo's public images:
 hash-chained but unsigned ledger, observe-only DLP. The **enterprise** edition
 (`ghcr.io/kydehq/gateway-distribution/*`) adds Ed25519/TPM audit signing and
 inline enforcement, on the same compose files — the edition is just an env-file
@@ -150,7 +150,7 @@ and [enterprise support](docs/deployment.md#12-enterprise-support).
 | [Deployment guide](docs/deployment.md) | Installing and operating the full stack — Docker Compose, editions, TLS, backups, upgrades |
 | [Reference](docs/reference.md) | Provider routing, MCP routing, `config.yaml`, CLI, agent identity, ledger format |
 | [User manual](docs/user-manual.md) | Using the dashboard — roles, DLP alerts and policies, users, settings |
-| [Building images](docs/building-images.md) | Building the container images and the sandbox/enterprise edition split |
+| [Building images](docs/building-images.md) | Building the container images and the starter/enterprise edition split |
 | [CI](docs/ci.md) | CI and release pipelines (public and private) |
 
 ## Development (pip install)

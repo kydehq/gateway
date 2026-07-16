@@ -278,7 +278,7 @@ export default function AuditLogPage() {
             />
           </>
         ) : (
-          // Sandbox is observe-only: the verifiable audit ledger (integrity
+          // Starter is observe-only: the verifiable audit ledger (integrity
           // verification + signatures) is Enterprise-only. The entries list
           // below stays fully available.
           <>

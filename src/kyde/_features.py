@@ -1,11 +1,11 @@
 """Edition seam — the single place that knows which enterprise packages shipped.
 
-The sandbox image is built by physically removing `signing.py` and the
+The starter image is built by physically removing `signing.py` and the
 `enforce/` package before install (see the Dockerfile EDITION build arg).
 When they're absent the capability flags go False; every caller routes
 through this module, so no other file needs a try/except.
 
-We deliberately distinguish "package physically absent" (sandbox build →
+We deliberately distinguish "package physically absent" (starter build →
 feature off) from "package present but fails to import" (a broken enterprise
 build → must surface loudly). A security product must never fail-open to
 "no enforcement" just because a transitive dependency is missing. So we
@@ -36,4 +36,4 @@ else:
 
 def edition() -> str:
     """Human-readable edition label for diagnostics and the dashboard."""
-    return "enterprise" if (HAS_SIGNING or HAS_ENFORCEMENT) else "sandbox"
+    return "enterprise" if (HAS_SIGNING or HAS_ENFORCEMENT) else "starter"

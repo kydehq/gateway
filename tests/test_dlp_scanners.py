@@ -11,7 +11,7 @@ sidecars and decide what becomes a stored alert:
     error handling that must turn any HTTP fault into a clean no-alert
     DlpFinding rather than crashing the scan.
   * `scan_text` — concurrency orchestration, the 8000-char truncation,
-    the regex-only sandbox path, and the broad fail-open catch.
+    the regex-only starter path, and the broad fail-open catch.
   * `_apply_allowlist` — the per-match (regex) and whole-label (bert)
     suppression matrix.
   * `scan_and_store_entry` — the threshold/allowlist/store decision loop,
@@ -154,7 +154,7 @@ def test_health_check_aggregates_both_when_bert_enabled(monkeypatch):
     assert {s["name"] for s in out["scanners"]} == {"bert", "regex"}
 
 
-def test_health_check_skips_bert_in_sandbox(monkeypatch):
+def test_health_check_skips_bert_in_starter(monkeypatch):
     monkeypatch.setattr(dlp, "bert_enabled", lambda: False)
 
     async def fake_probe(client, name, url):
