@@ -10,8 +10,10 @@
  *
  * Tokens are HSL triplets (not raw HEX) so Tailwind opacity modifiers
  * (bg-primary/20, text-success/60, bg-foreground/10, …) resolve correctly.
- * The HEX source for each value is noted inline; light is the only canonical
- * theme — there is no dark variant.
+ * The HEX source for each value is noted inline. Light is the canonical
+ * theme (DESIGN.md); the `.dark` block below is the derived dark variant —
+ * same rules (hairline borders, flat cards, mono labels), inverted neutrals,
+ * severity/status tints rebuilt on near-black surfaces.
  */
 @layer base {
   :root {
@@ -92,6 +94,81 @@
     --sidebar: 0 0% 100%;
     --sidebar-foreground: 0 0% 32%;
     --sidebar-border: 0 0% 93%;    /* #ededed */
+
+    color-scheme: light;
+  }
+
+  /* Editorial Mono — dark. Near-black surfaces separated by hairline borders
+   * (never elevation), the blue accent nudged lighter for contrast, and the
+   * chart line flipped to off-white. Severity/status keep their hue but as
+   * brighter fg on deep tinted bg. */
+  .dark {
+    --background: 0 0% 4%;         /* #0a0a0a */
+    --foreground: 0 0% 98%;        /* #fafafa */
+
+    --card: 0 0% 6%;               /* #0f0f0f */
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 8%;            /* #141414 */
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 217 91% 60%;        /* #3b82f6 — one step lighter on dark */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 12%;         /* #1f1f1f */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 11%;             /* #1c1c1c */
+    --muted-foreground: 0 0% 63%;  /* #a1a1a1 */
+
+    --accent: 0 0% 13%;            /* #212121 — active nav / hover-active */
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84% 60%;      /* #ef4444 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 15%;            /* #262626 */
+    --input: 0 0% 15%;
+    --ring: 217 91% 60%;
+
+    --success: 142 69% 45%;        /* #24c25f */
+    --warning: 43 89% 55%;         /* #f2b70e-ish */
+    --info: 217 91% 60%;
+
+    /* Monochrome blue ramp, rank 1 brightest → 5 receding into the dark. */
+    --chart-1: 217 91% 60%;        /* #3b82f6 */
+    --chart-2: 218 75% 52%;        /* #2f6ade */
+    --chart-3: 219 62% 44%;        /* #2b57b6 */
+    --chart-4: 220 55% 36%;        /* #29478e */
+    --chart-5: 221 48% 28%;        /* #253a6a */
+    --chart-line: 0 0% 93%;        /* #ededed line charts */
+    --chart-grid: 0 0% 13%;        /* #212121 dashed grid */
+    --chart-axis: 0 0% 45%;        /* #737373 ticks */
+    --chart-marker: 0 84% 60%;     /* #ef4444 single peak marker */
+    --chart-track: 0 0% 10%;       /* #1a1a1a empty bar track */
+
+    --text-base: 0 0% 80%;         /* #cccccc body / table content */
+    --text-faint: 0 0% 45%;        /* #737373 timestamps / placeholders */
+    --brand-yellow: 43 89% 55%;    /* brighter spark on dark */
+    --brand-green: 142 69% 45%;
+    --brand-mist: 185 15% 16%;     /* #232f30 — eyebrow-chip surface */
+    --brand-mist-foreground: 183 12% 72%; /* #aac0c1 */
+
+    --status-neutral-fg: #a3a3a3; --status-neutral-bg: #1c1c1c; --status-neutral-border: #2e2e2e;
+    --status-active-fg:  #60a5fa; --status-active-bg:  #14213d; --status-active-border:  #1e3a6e;
+    --status-ok-fg:      #4ade80; --status-ok-bg:      #0f231a; --status-ok-border:      #1b4d32;
+    --status-bad-fg:     #f87171; --status-bad-bg:     #2a1414; --status-bad-border:     #5c2222;
+
+    --sev-critical-fg: 0 91% 71%;   --sev-critical-bg: 0 40% 12%;   /* #f87171 / #2b1212 */
+    --sev-high-fg:     27 96% 61%;  --sev-high-bg:     27 45% 11%;  /* #fb923c / #291a0f */
+    --sev-medium-fg:   45 93% 58%;  --sev-medium-bg:   45 45% 10%;  /* #facc35 / #251f0e */
+    --sev-low-fg:      142 69% 58%; --sev-low-bg:      142 35% 10%; /* #4ade80 / #112215 */
+
+    --sidebar: 0 0% 4%;
+    --sidebar-foreground: 0 0% 68%;
+    --sidebar-border: 0 0% 12%;    /* #1f1f1f */
+
+    color-scheme: dark;
   }
 }
 

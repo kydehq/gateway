@@ -4,8 +4,9 @@ import animate from "tailwindcss-animate";
 // shadcn/ui theme. Colors resolve to CSS variables declared in src/index.css,
 // which means changing the palette is a single-file edit there.
 export default {
-  // Editorial Mono ships a single canonical light theme — no dark variant.
-  darkMode: false,
+  // Light is canonical (DESIGN.md); the `.dark` class on <html> switches to
+  // the derived dark token set in index.css. Toggled via use-theme.ts.
+  darkMode: ["class"],
   content: [
     "./index.html",
     "./src/**/*.{ts,tsx}",

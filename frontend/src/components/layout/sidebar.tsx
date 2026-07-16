@@ -22,6 +22,7 @@ import { useMe } from "@/hooks/use-me";
 import { useNavPrefetch } from "@/hooks/use-prefetch";
 import { UserMenu } from "./user-menu";
 import { NotificationsBell } from "./notifications-bell";
+import { ThemeToggle } from "./theme-toggle";
 import { ChainStatusChip } from "./chain-status-chip";
 import { UpgradeCard } from "@/components/shared/upgrade-lock";
 
@@ -132,9 +133,13 @@ export function Sidebar() {
       <div className="border-b border-border px-5 py-6">
         <div className="mb-4 flex items-center justify-between">
           <a href="./" className="inline-block" aria-label="KYDE home">
-            <img src="/logo.png" alt="KYDE" className="h-7 w-auto" />
+            {/* Black-on-transparent wordmark — invert it on dark surfaces. */}
+            <img src="/logo.png" alt="KYDE" className="h-7 w-auto dark:invert" />
           </a>
-          <NotificationsBell />
+          <div className="flex items-center gap-0.5">
+            <ThemeToggle />
+            <NotificationsBell />
+          </div>
         </div>
         <div className="mb-3 flex flex-wrap items-center gap-1.5">
           <ChainStatusChip />
