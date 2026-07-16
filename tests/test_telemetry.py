@@ -279,3 +279,155 @@ def test_maybe_emit_noops_when_disabled(monkeypatch):
     )
     asyncio.run(telemetry._maybe_emit())
     assert called["emit"] is False
+
+
+def _enabled_settings(interval_hours: float = 1.0):
+    def _get(key):
+        return {
+            "TELEMETRY_ENABLED": True,
+            "TELEMETRY_ENDPOINT": "https://collector.example/v1/ingest",
+            "TELEMETRY_INTERVAL_HOURS": interval_hours,
+        }.get(key)
+
+    return _get
+
+
+def test_maybe_emit_skips_inside_interval(monkeypatch):
+    called = {"emit": False}
+
+    async def _spy():
+        called["emit"] = True
+        return {}
+
+    monkeypatch.setattr(telemetry, "emit_once", _spy)
+    monkeypatch.setattr(telemetry.settings, "get", _enabled_settings())
+    _reset_watermark(time.time())  # just sent — interval has not elapsed
+    asyncio.run(telemetry._maybe_emit())
+    assert called["emit"] is False
+
+
+def test_maybe_emit_emits_once_interval_elapsed(monkeypatch):
+    called = {"emit": False}
+
+    async def _spy():
+        called["emit"] = True
+        return {}
+
+    monkeypatch.setattr(telemetry, "emit_once", _spy)
+    monkeypatch.setattr(telemetry.settings, "get", _enabled_settings())
+    _reset_watermark(0.0)
+    asyncio.run(telemetry._maybe_emit())
+    assert called["emit"] is True
+
+
+# ---------------------------------------------------------------------------
+# Transport key lifecycle
+# ---------------------------------------------------------------------------
+
+
+def test_transport_key_generated_once_then_loaded(monkeypatch, tmp_path):
+    monkeypatch.setattr(telemetry, "KEY_DIR", tmp_path)
+    monkeypatch.setattr(
+        telemetry, "TRANSPORT_KEY_PATH", tmp_path / "telemetry_transport.key"
+    )
+    monkeypatch.setattr(telemetry, "_private_key", None)
+
+    key = telemetry.ensure_transport_key()
+    path = telemetry.TRANSPORT_KEY_PATH
+    assert path.exists()
+    assert (path.stat().st_mode & 0o777) == 0o600
+    # Cached instance is returned without re-reading.
+    assert telemetry.ensure_transport_key() is key
+
+    # A fresh process (cache cleared) loads the SAME key from disk.
+    monkeypatch.setattr(telemetry, "_private_key", None)
+    reloaded = telemetry.ensure_transport_key()
+    assert (
+        reloaded.public_key().public_bytes_raw() == key.public_key().public_bytes_raw()
+    )
+
+
+# ---------------------------------------------------------------------------
+# Delivery retries
+# ---------------------------------------------------------------------------
+
+
+class _FakeAsyncClient:
+    """Stand-in for httpx.AsyncClient — scripted responses per attempt."""
+
+    calls = 0
+    fail_times = 0
+
+    def __init__(self, *a, **kw):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        return False
+
+    async def post(self, endpoint, json=None):
+        cls = type(self)
+        cls.calls += 1
+        if cls.calls <= cls.fail_times:
+            raise RuntimeError(f"connect refused (attempt {cls.calls})")
+
+        class _Resp:
+            def raise_for_status(self):
+                pass
+
+        return _Resp()
+
+
+def test_post_batch_retries_then_succeeds(monkeypatch):
+    _FakeAsyncClient.calls = 0
+    _FakeAsyncClient.fail_times = 1
+    monkeypatch.setattr(telemetry.httpx, "AsyncClient", _FakeAsyncClient)
+    monkeypatch.setattr(telemetry, "_SEND_BACKOFF_S", 0.0)
+
+    ok, err = asyncio.run(telemetry._post_batch("https://x.example", {"a": 1}))
+    assert ok is True and err == ""
+    assert _FakeAsyncClient.calls == 2  # one failure, one success
+
+
+def test_post_batch_gives_up_after_all_retries(monkeypatch):
+    _FakeAsyncClient.calls = 0
+    _FakeAsyncClient.fail_times = 99
+    monkeypatch.setattr(telemetry.httpx, "AsyncClient", _FakeAsyncClient)
+    monkeypatch.setattr(telemetry, "_SEND_BACKOFF_S", 0.0)
+
+    ok, err = asyncio.run(telemetry._post_batch("https://x.example", {"a": 1}))
+    assert ok is False
+    assert "connect refused" in err
+    assert _FakeAsyncClient.calls == telemetry._SEND_RETRIES
+
+
+# ---------------------------------------------------------------------------
+# Worker task
+# ---------------------------------------------------------------------------
+
+
+def test_worker_starts_once_and_survives_crashes(monkeypatch):
+    crashes = {"n": 0}
+
+    async def _boom():
+        crashes["n"] += 1
+        raise RuntimeError("cycle crashed")
+
+    monkeypatch.setattr(telemetry, "_maybe_emit", _boom)
+    monkeypatch.setattr(telemetry, "_TICK_SECONDS", 0.01)
+    monkeypatch.setattr(telemetry, "_worker_task", None)
+
+    async def _run():
+        t1 = telemetry.start_telemetry_worker()
+        t2 = telemetry.start_telemetry_worker()
+        assert t1 is t2  # idempotent
+        await asyncio.sleep(0.05)
+        assert not t1.done()  # the loop swallowed the crash and kept running
+        t1.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await t1
+
+    asyncio.run(_run())
+    assert crashes["n"] >= 2

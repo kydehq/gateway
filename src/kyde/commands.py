@@ -12,6 +12,19 @@ def run_cli_entry():
     run_cli(sys.argv[1:])
 
 
+def _as_list(value) -> list:
+    """Decode a ledger JSON column that may arrive either way.
+
+    jsonb columns come back from psycopg already decoded (list/dict);
+    legacy TEXT rows and defaults arrive as JSON strings.
+    """
+    if value is None:
+        return []
+    if isinstance(value, (bytes, str)):
+        return json.loads(value or "[]")
+    return value
+
+
 def run_cli(args: list[str]):
     if not args or args[0] == "help":
         _print_help()
@@ -338,7 +351,7 @@ def _cmd_ledger_list():
         upstream = (e.get("upstream") or "-")[:10]
         ip = (e.get("client_ip") or "-")[:15]
         model = e["model"][:16]
-        tools = json.loads(e["tool_calls"])
+        tools = _as_list(e["tool_calls"])
         tool_names = ", ".join(tc.get("function", "?") for tc in tools) or "-"
         print(
             f"{seq:<5} {ts:<20} {agent:<20} {action:<12} {upstream:<10} {ip:<16} {model:<18} {tool_names}"
@@ -411,7 +424,7 @@ def _cmd_ledger_show(entry_ref: str):
     print(f"  Model      : {entry['model']}")
     print()
 
-    why = json.loads(entry["why"])
+    why = _as_list(entry["why"])
     print("WHY (reasoning context):")
     for msg in why:
         role = msg["role"].upper()
@@ -419,7 +432,7 @@ def _cmd_ledger_show(entry_ref: str):
         print(f"  [{role}] {content}")
     print()
 
-    tool_calls = json.loads(entry["tool_calls"])
+    tool_calls = _as_list(entry["tool_calls"])
     if tool_calls:
         print("TOOL CALLS:")
         for tc in tool_calls:
@@ -429,7 +442,7 @@ def _cmd_ledger_show(entry_ref: str):
         print("TOOL CALLS: none")
     print()
 
-    full_messages = json.loads(entry.get("full_messages") or "[]")
+    full_messages = _as_list(entry.get("full_messages"))
     print(f"SESSION CONTEXT: {len(full_messages)} message(s) captured")
     for msg in full_messages:
         role = msg.get("role", "?").upper()
@@ -450,10 +463,10 @@ def _cmd_ledger_show(entry_ref: str):
         "agent_id": entry["agent_id"],
         "action_type": entry["action_type"],
         "model": entry["model"],
-        "why": json.loads(entry["why"]),
+        "why": _as_list(entry["why"]),
         "input_hash": entry["input_hash"],
         "output_hash": entry["output_hash"],
-        "tool_calls": json.loads(entry["tool_calls"]),
+        "tool_calls": _as_list(entry["tool_calls"]),
         "prev_hash": entry["prev_hash"],
     }
     if _features.HAS_SIGNING and entry["signature"]:
