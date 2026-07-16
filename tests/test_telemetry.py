@@ -343,8 +343,7 @@ def test_transport_key_generated_once_then_loaded(monkeypatch, tmp_path):
     monkeypatch.setattr(telemetry, "_private_key", None)
     reloaded = telemetry.ensure_transport_key()
     assert (
-        reloaded.public_key().public_bytes_raw()
-        == key.public_key().public_bytes_raw()
+        reloaded.public_key().public_bytes_raw() == key.public_key().public_bytes_raw()
     )
 
 
