@@ -527,3 +527,102 @@ def test_prevention_bulk_rejects_viewer(viewer_client):
         "/api/dlp-policies/prevention-bulk", json={"enabled": True}
     )
     assert resp.status_code == 403
+
+
+# ---------------------------------------------------------------------------
+# Bundled-YAML loading
+# ---------------------------------------------------------------------------
+
+
+def test_load_bundled_reads_valid_and_skips_malformed(monkeypatch, tmp_path):
+    (tmp_path / "gitleaks.yaml").write_text(
+        """
+source: gitleaks
+patterns:
+  - id: aws_key
+    name: AWS Access Key
+    regex: AKIA[0-9A-Z]{16}
+  - name: missing-id-is-skipped
+"""
+    )
+    (tmp_path / "broken.yaml").write_text("patterns: [not: {valid")
+    (tmp_path / "no_source.yaml").write_text("patterns:\n  - id: x\n")
+
+    monkeypatch.setattr(dlp_policies, "BUNDLED_DIR", tmp_path)
+    dlp_policies.reset_state_for_tests()
+    try:
+        bundled = dlp_policies.bundled_patterns()
+        assert set(bundled) == {"aws_key"}
+        # The file-level source is stamped onto every pattern.
+        assert bundled["aws_key"]["source"] == "gitleaks"
+        # Idempotent — a second call doesn't re-read.
+        assert dlp_policies.bundled_patterns() is bundled
+    finally:
+        dlp_policies.reset_state_for_tests()
+
+
+def test_load_bundled_tolerates_missing_dir(monkeypatch, tmp_path):
+    monkeypatch.setattr(dlp_policies, "BUNDLED_DIR", tmp_path / "gone")
+    dlp_policies.reset_state_for_tests()
+    try:
+        assert dlp_policies.bundled_patterns() == {}
+    finally:
+        dlp_policies.reset_state_for_tests()
+
+
+# ---------------------------------------------------------------------------
+# Push failure paths
+# ---------------------------------------------------------------------------
+
+
+def test_push_with_retries_gives_up_and_returns_none(monkeypatch, capsys):
+    async def always_fail():
+        raise RuntimeError("dlp-regex still booting")
+
+    monkeypatch.setattr(dlp_policies, "push_active_set", always_fail)
+    monkeypatch.setattr(dlp_policies, "_STARTUP_RETRIES", 2)
+    monkeypatch.setattr(dlp_policies, "_STARTUP_BACKOFF_S", 0.0)
+
+    result = asyncio.run(dlp_policies.push_active_set_with_retries())
+    assert result is None
+    assert "giving up after 2 attempts" in capsys.readouterr().out
+
+
+def test_observe_boot_id_repush_inside_running_loop(monkeypatch):
+    pushes: list[bool] = []
+
+    async def fake_push():
+        pushes.append(True)
+        return {"loaded": 0, "boot_id": "boot-9"}
+
+    monkeypatch.setattr(dlp_policies, "push_active_set", fake_push)
+    dlp_policies.reset_state_for_tests()
+
+    async def scenario():
+        dlp_policies.observe_boot_id("boot-8")  # seed
+        dlp_policies.observe_boot_id("boot-9")  # drift → create_task branch
+        for _ in range(3):
+            await asyncio.sleep(0)
+
+    asyncio.run(scenario())
+    assert pushes == [True]
+
+
+def test_safe_push_swallows_failures(monkeypatch, capsys):
+    async def always_fail():
+        raise RuntimeError("connect refused")
+
+    monkeypatch.setattr(dlp_policies, "push_active_set", always_fail)
+    asyncio.run(dlp_policies._safe_push())
+    assert "drift re-push failed" in capsys.readouterr().out
+
+
+def test_recovery_push_reports_failure_and_clears_flag(monkeypatch, capsys):
+    async def always_fail():
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(dlp_policies, "push_active_set", always_fail)
+    monkeypatch.setattr(dlp_policies, "_RECOVERY_IN_FLIGHT", False)
+    dlp_policies.request_recovery_push()
+    assert "recovery push failed" in capsys.readouterr().out
+    assert dlp_policies._RECOVERY_IN_FLIGHT is False

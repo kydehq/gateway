@@ -137,3 +137,62 @@ def test_api_classify_endpoint_persists_result(client, monkeypatch):
     body = r.json()
     assert body["intent"] == "code_review"
     assert body["confidence"] == 0.65
+
+
+def test_condense_trims_long_turns():
+    long_content = "x" * (intent_classifier._MAX_CHARS_PER_TURN + 50)
+    text = intent_classifier._condense([{"role": "user", "content": long_content}])
+    assert text.startswith("user: ")
+    assert text.endswith("…")
+    assert len(text) < len(long_content)
+
+
+def test_parse_response_handles_bad_confidence_and_unknown_label():
+    # Non-numeric confidence → 0.0.
+    assert intent_classifier._parse_response("code_review: high") == (
+        "code_review",
+        0.0,
+    )
+    # Unknown label falls back to "other"; confidence clamps to [0, 1].
+    assert intent_classifier._parse_response("juggling: 7.5") == ("other", 1.0)
+
+
+def test_classify_session_returns_none_without_turns(monkeypatch):
+    monkeypatch.setenv("INTENT_CLASSIFIER_URL", "http://stub")
+    # Session id that has no ledger entries at all.
+    assert intent_classifier.classify_session("no-such-session") is None
+
+
+def test_call_model_posts_chat_completion(monkeypatch):
+    captured: dict = {}
+
+    class _Resp:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"choices": [{"message": {"content": "coding: 0.9"}}]}
+
+    class _Client:
+        def __init__(self, *a, **kw):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def post(self, url, json=None, headers=None):
+            captured.update(url=url, json=json, headers=headers)
+            return _Resp()
+
+    monkeypatch.setattr(intent_classifier.httpx, "Client", _Client)
+    raw = intent_classifier._call_model(
+        "user: hi", {"url": "http://llm.local/v1/chat", "model": "m1", "key": "sk-1"}
+    )
+    assert raw == "coding: 0.9"
+    assert captured["url"] == "http://llm.local/v1/chat"
+    assert captured["headers"]["Authorization"] == "Bearer sk-1"
+    assert captured["json"]["model"] == "m1"
+    assert captured["json"]["temperature"] == 0.0

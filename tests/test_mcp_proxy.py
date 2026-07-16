@@ -562,3 +562,51 @@ def test_per_agent_deny_does_not_block_other_agents(proxy_client, monkeypatch):
     assert resp.status_code == 200
     assert resp.json().get("error") is None
     assert captured[0]["outcome"] == "ok"
+
+
+# ---------------------------------------------------------------------------
+# Session-termination DELETE (Streamable HTTP "Session Management")
+# ---------------------------------------------------------------------------
+
+
+def test_delete_unknown_server_returns_404(proxy_client):
+    resp = proxy_client.delete("/mcp/ghost")
+    assert resp.status_code == 404
+
+
+def test_delete_disabled_server_returns_404(proxy_client):
+    mcp_registry.upsert_server("svc", "https://upstream.test/mcp", enabled=False)
+    resp = proxy_client.delete("/mcp/svc")
+    assert resp.status_code == 404
+
+
+def test_delete_forwards_to_upstream_and_returns_response(proxy_client, monkeypatch):
+    mcp_registry.upsert_server("svc", "https://upstream.test/mcp")
+    fake = _FakeAsyncClient(status_code=200, body=b"", headers={})
+    _install_fake_client(monkeypatch, fake)
+
+    resp = proxy_client.delete(
+        "/mcp/svc", headers={"Mcp-Session-Id": "sess-123"}
+    )
+    assert resp.status_code == 200
+    assert fake.captured["method"] == "DELETE"
+    assert fake.captured["url"] == "https://upstream.test/mcp"
+    assert fake.captured["content"] is None
+    # The session header must reach the upstream so it can end the session.
+    assert fake.captured["headers"].get("mcp-session-id") == "sess-123"
+
+
+def test_delete_upstream_error_returns_502(proxy_client, monkeypatch):
+    mcp_registry.upsert_server("svc", "https://upstream.test/mcp")
+    fake = _FakeAsyncClient(raise_exc=httpx.ConnectError("boom"))
+    _install_fake_client(monkeypatch, fake)
+
+    resp = proxy_client.delete("/mcp/svc")
+    assert resp.status_code == 502
+    assert b"upstream transport error" in resp.content
+
+
+def test_try_parse_json_edge_cases():
+    assert mcp_proxy._try_parse_json(b"") is None
+    assert mcp_proxy._try_parse_json(b"[1, 2]") is None
+    assert mcp_proxy._try_parse_json(b'{"ok": true}') == {"ok": True}
