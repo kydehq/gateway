@@ -243,8 +243,7 @@ def _hit_counts() -> dict[str, dict]:
     """
     with ledger._conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT finding->>'pattern_id' AS pattern_id,
                        COUNT(*)               AS hits,
                        MAX(created_at)        AS last_hit
@@ -253,8 +252,7 @@ def _hit_counts() -> dict[str, dict]:
                 WHERE  scanner = 'regex'
                    AND finding ? 'pattern_id'
                 GROUP  BY 1
-                """
-            )
+                """)
             rows = cur.fetchall()
     out: dict[str, dict] = {}
     for r in rows:

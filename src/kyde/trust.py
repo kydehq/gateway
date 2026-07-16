@@ -35,7 +35,6 @@ from typing import Iterable
 
 from . import ledger
 
-
 # ---------------------------------------------------------------------------
 # The formula (pure, no I/O — keep faithful to the HTML calculator)
 # ---------------------------------------------------------------------------

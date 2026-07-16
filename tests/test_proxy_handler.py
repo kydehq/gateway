@@ -31,7 +31,6 @@ from fastapi.testclient import TestClient
 
 from kyde import ledger, server
 
-
 # ---------------------------------------------------------------------------
 # Fake httpx upstream
 # ---------------------------------------------------------------------------

@@ -16,9 +16,7 @@ from kyde import commands, ledger
 from kyde._features import HAS_SIGNING
 from kyde.testing import append_simple, seed_user
 
-starter_only = pytest.mark.skipif(
-    HAS_SIGNING, reason="starter-edition CLI output only"
-)
+starter_only = pytest.mark.skipif(HAS_SIGNING, reason="starter-edition CLI output only")
 
 
 # ---------------------------------------------------------------------------
@@ -107,9 +105,7 @@ def test_serve_parses_host_and_port(capsys, monkeypatch):
     calls: list[dict] = []
     import uvicorn
 
-    monkeypatch.setattr(
-        uvicorn, "run", lambda app, **kw: calls.append(kw)
-    )
+    monkeypatch.setattr(uvicorn, "run", lambda app, **kw: calls.append(kw))
     commands.run_cli(["serve", "--port", "9123", "--host", "127.0.0.9"])
     assert calls == [{"host": "127.0.0.9", "port": 9123, "log_level": "warning"}]
     assert "9123" in capsys.readouterr().out
@@ -119,9 +115,7 @@ def test_dashboard_parses_host_and_port(capsys, monkeypatch):
     calls: list[dict] = []
     import uvicorn
 
-    monkeypatch.setattr(
-        uvicorn, "run", lambda app, **kw: calls.append(kw)
-    )
+    monkeypatch.setattr(uvicorn, "run", lambda app, **kw: calls.append(kw))
     commands.run_cli(["dashboard", "--port", "9345", "--host", "0.0.0.0"])
     assert calls == [{"host": "0.0.0.0", "port": 9345, "log_level": "info"}]
     assert "Audit Dashboard" in capsys.readouterr().out
@@ -164,9 +158,7 @@ def test_ledger_verify_broken_chain_exits_nonzero(capsys):
     # Corrupt the chain directly — flip the second entry's prev_hash.
     with ledger._conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE ledger SET prev_hash = repeat('0', 64) WHERE seq = 2"
-            )
+            cur.execute("UPDATE ledger SET prev_hash = repeat('0', 64) WHERE seq = 2")
         conn.commit()
     ledger._reset_verify_cache()
     with pytest.raises(SystemExit) as exc:

@@ -1987,9 +1987,7 @@ def _render_change_password_page(force: bool) -> str:
         else "Update the password on your account."
     )
     script = (
-        _PASSWORD_POLICY_JS
-        + "\n  _wireHint('new_password', 'cp-policy-hint');"
-        + """
+        _PASSWORD_POLICY_JS + "\n  _wireHint('new_password', 'cp-policy-hint');" + """
   document.getElementById('cp-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const slot = document.getElementById('auth-error-slot');
@@ -3826,7 +3824,6 @@ async def stcore_ws_stub(websocket: WebSocket, path: str):
 # and after the middleware is installed — the `topology` module hangs
 # decorators on the already-built `app`.
 from . import topology  # noqa: E402, F401  # route registration side effect
-
 
 # ---------------------------------------------------------------------------
 # Run standalone

@@ -26,7 +26,6 @@ from threading import Lock
 from typing import Iterable, Optional
 from urllib.parse import urlparse
 
-
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------

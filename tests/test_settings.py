@@ -22,7 +22,6 @@ import pytest
 
 from kyde import ledger, settings
 
-
 # Keys this module writes to — wiped before/after every test so rows never
 # leak across tests (settings table survives clean_db).
 _TOUCHED = [

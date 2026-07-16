@@ -12,7 +12,6 @@ import pytest
 
 from kyde import ledger, mcp_registry
 
-
 # ---------------------------------------------------------------------------
 # Validation — happens before any DB write so operator typos surface early.
 # ---------------------------------------------------------------------------

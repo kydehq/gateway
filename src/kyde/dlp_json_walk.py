@@ -23,7 +23,6 @@ import httpx
 
 from . import dlp
 
-
 # Defend against pathologically nested payloads — a malicious agent could
 # in principle send a JSON tree millions of levels deep and exhaust the
 # stack. 20 covers every real-world MCP tool we've seen with margin.

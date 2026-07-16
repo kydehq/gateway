@@ -27,7 +27,6 @@ from kyde import (
     server,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fake upstream — replaces httpx.AsyncClient inside mcp_proxy.
 # ---------------------------------------------------------------------------
@@ -585,9 +584,7 @@ def test_delete_forwards_to_upstream_and_returns_response(proxy_client, monkeypa
     fake = _FakeAsyncClient(status_code=200, body=b"", headers={})
     _install_fake_client(monkeypatch, fake)
 
-    resp = proxy_client.delete(
-        "/mcp/svc", headers={"Mcp-Session-Id": "sess-123"}
-    )
+    resp = proxy_client.delete("/mcp/svc", headers={"Mcp-Session-Id": "sess-123"})
     assert resp.status_code == 200
     assert fake.captured["method"] == "DELETE"
     assert fake.captured["url"] == "https://upstream.test/mcp"

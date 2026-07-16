@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from kyde import trust
 
-
 # ---------------------------------------------------------------------------
 # Calculator scenarios — (S, C, I, R, E) → expected composite score.
 # Values verified against the JS `calc()` (round-half-up).

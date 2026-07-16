@@ -633,14 +633,12 @@ def reapply_allowlist_to_open_alerts() -> dict:
 
     with ledger._conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT id, alert_id, scanner, findings
                   FROM dlp_alerts
                  WHERE status <> 'closed'
                  ORDER BY id
-                """
-            )
+                """)
             rows = list(cur.fetchall())
 
     for row in rows:

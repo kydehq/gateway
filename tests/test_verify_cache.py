@@ -16,7 +16,6 @@ from __future__ import annotations
 from kyde import ledger
 from kyde.testing import append_simple as _append_simple
 
-
 # ---------------------------------------------------------------------------
 # Cold call populates the cache
 # ---------------------------------------------------------------------------

@@ -11,7 +11,6 @@ from kyde import ledger, mcp_ledger, mcp_registry
 from kyde.dlp import DlpFinding
 from kyde.testing import append_simple
 
-
 # ---------------------------------------------------------------------------
 # _action_for / _findings_to_jsonb / now_ms
 # ---------------------------------------------------------------------------
@@ -20,8 +19,7 @@ from kyde.testing import append_simple
 def test_action_for_outcome_dominates_method():
     assert mcp_ledger._action_for("tools/call", "blocked") == mcp_ledger.ACTION_BLOCKED
     assert (
-        mcp_ledger._action_for("tools/call", "dlp_blocked")
-        == mcp_ledger.ACTION_BLOCKED
+        mcp_ledger._action_for("tools/call", "dlp_blocked") == mcp_ledger.ACTION_BLOCKED
     )
     assert (
         mcp_ledger._action_for("tools/call", "upstream_error")
@@ -38,7 +36,13 @@ def test_action_for_outcome_dominates_method():
 def test_findings_to_jsonb_strips_dataclass():
     f = DlpFinding(scanner="regex", alert=True, score=0.9, findings=[{"a": 1}])
     assert mcp_ledger._findings_to_jsonb([f]) == [
-        {"scanner": "regex", "alert": True, "score": 0.9, "findings": [{"a": 1}], "error": ""}
+        {
+            "scanner": "regex",
+            "alert": True,
+            "score": 0.9,
+            "findings": [{"a": 1}],
+            "error": "",
+        }
     ]
 
 

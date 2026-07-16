@@ -25,7 +25,6 @@ import pytest
 from kyde import ledger, notifications, smtp_sender
 from kyde.smtp_sender import SmtpConfig
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

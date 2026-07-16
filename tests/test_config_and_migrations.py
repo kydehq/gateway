@@ -8,7 +8,6 @@ import pytest
 
 from kyde import config, ledger, migrations
 
-
 # ---------------------------------------------------------------------------
 # config._config_path
 # ---------------------------------------------------------------------------
@@ -39,8 +38,7 @@ def test_load_upstreams_defaults_when_file_missing(monkeypatch, tmp_path):
 
 def test_load_upstreams_merges_overrides_and_new_entries(monkeypatch, tmp_path):
     cfg = tmp_path / "config.yaml"
-    cfg.write_text(
-        """
+    cfg.write_text("""
 upstreams:
   openai:
     base: http://openai-proxy.internal/
@@ -49,8 +47,7 @@ upstreams:
     base: http://localhost:11434
   broken:
     api_prefix: /v1
-"""
-    )
+""")
     monkeypatch.setenv("KYDE_CONFIG", str(cfg))
     upstreams = config.load_upstreams()
     # Override wins and trailing slash is stripped.

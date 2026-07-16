@@ -709,13 +709,11 @@ def get_stats_rows(since: Optional[float] = None) -> list[dict]:
     with _conn() as conn:
         with conn.cursor() as cur:
             if since is None:
-                cur.execute(
-                    """
+                cur.execute("""
                     SELECT agent_id, session_id, action_type, upstream, timestamp
                       FROM ledger
                      ORDER BY seq ASC
-                    """
-                )
+                    """)
             else:
                 cur.execute(
                     """
@@ -852,13 +850,11 @@ def get_telemetry_state() -> dict:
     """Return the singleton telemetry_state row (see 0021 migration)."""
     with _conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT hmac_salt, last_sent, last_status, last_error, updated_at
                   FROM telemetry_state
                  WHERE singleton = TRUE
-                """
-            )
+                """)
             row = cur.fetchone()
             return dict(row) if row else {}
 
@@ -1244,14 +1240,12 @@ def list_host_labels() -> list[dict]:
     Settings 'Labeled' chip."""
     with _conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT ip, hostname, resolved_at, ttl_seconds
                   FROM host_resolutions
                  WHERE source = 'admin'
                  ORDER BY resolved_at DESC
-                """
-            )
+                """)
             return list(cur.fetchall())
 
 
@@ -1580,8 +1574,7 @@ def list_agents() -> list[dict]:
     """
     with _conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT a.agent_id,
                        a.display_name,
                        a.first_seen,
@@ -1593,8 +1586,7 @@ def list_agents() -> list[dict]:
                   LEFT JOIN ledger l ON l.agent_id = a.agent_id
                  GROUP BY a.agent_id, a.display_name, a.first_seen, a.last_seen
                  ORDER BY a.last_seen DESC
-                """
-            )
+                """)
             return list(cur.fetchall())
 
 
@@ -1685,15 +1677,13 @@ def get_session_rows() -> list[dict]:
     """
     with _conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT entry_id, seq, timestamp, session_id, agent_id, model,
                        upstream, action_type, why, tool_calls, full_messages,
                        prompt_tokens, completion_tokens
                   FROM ledger
                  ORDER BY seq ASC
-                """
-            )
+                """)
             return list(cur.fetchall())
 
 
@@ -2173,15 +2163,13 @@ def any_admin_exists() -> bool:
     """True if any non-deleted user has the 'admin' role."""
     with _conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT EXISTS(
                     SELECT 1 FROM users
                      WHERE deleted_at IS NULL
                        AND roles ? 'admin'
                 ) AS has_admin
-                """
-            )
+                """)
             return bool(cur.fetchone()["has_admin"])
 
 
@@ -2295,8 +2283,7 @@ def get_auditor_emails() -> list[str]:
     """
     with _conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT DISTINCT email
                   FROM users
                  WHERE enabled
@@ -2304,8 +2291,7 @@ def get_auditor_emails() -> list[str]:
                    AND email <> ''
                    AND roles @> '["auditor"]'::jsonb
                  ORDER BY email ASC
-                """
-            )
+                """)
             rows = cur.fetchall()
     return [r["email"] for r in rows]
 
@@ -2682,14 +2668,12 @@ def list_dlp_rules() -> list[dict]:
     """All rules, newest first. Joins username for display."""
     with _conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT r.*, u.username AS created_by_username
                   FROM dlp_rules r
                   LEFT JOIN users u ON u.id = r.created_by
                  ORDER BY r.id DESC
-                """
-            )
+                """)
             rows = cur.fetchall()
     return list(rows)
 

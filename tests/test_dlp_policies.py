@@ -535,16 +535,14 @@ def test_prevention_bulk_rejects_viewer(viewer_client):
 
 
 def test_load_bundled_reads_valid_and_skips_malformed(monkeypatch, tmp_path):
-    (tmp_path / "gitleaks.yaml").write_text(
-        """
+    (tmp_path / "gitleaks.yaml").write_text("""
 source: gitleaks
 patterns:
   - id: aws_key
     name: AWS Access Key
     regex: AKIA[0-9A-Z]{16}
   - name: missing-id-is-skipped
-"""
-    )
+""")
     (tmp_path / "broken.yaml").write_text("patterns: [not: {valid")
     (tmp_path / "no_source.yaml").write_text("patterns:\n  - id: x\n")
 
