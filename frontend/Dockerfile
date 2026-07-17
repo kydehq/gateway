@@ -2,8 +2,13 @@
 
 # --------------------------------------------------------------------------
 # Stage 1 — Build the Vite bundle.
+#
+# Pinned to $BUILDPLATFORM: the bundle is static files (arch-independent),
+# so node/npm always run natively on the build host instead of under qemu
+# emulation — npm segfaults ("Illegal instruction") when emulating arm64
+# on the amd64 CI runners. Only the nginx stage below is per-arch.
 # --------------------------------------------------------------------------
-FROM node:20-alpine AS build
+FROM --platform=$BUILDPLATFORM node:20-alpine AS build
 
 WORKDIR /build
 
