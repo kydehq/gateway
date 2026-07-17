@@ -133,8 +133,8 @@ export function Sidebar() {
       <div className="border-b border-border px-5 py-6">
         <div className="mb-4 flex items-center justify-between">
           <a href="./" className="inline-block" aria-label="KYDE home">
-            {/* Black-on-transparent wordmark — invert it on dark surfaces. */}
-            <img src="/logo.png" alt="KYDE" className="h-7 w-auto dark:invert" />
+            <img src="/logo-black.svg" alt="KYDE" className="h-7 w-auto dark:hidden" />
+            <img src="/logo-white.svg" alt="KYDE" className="hidden h-7 w-auto dark:block" />
           </a>
           <div className="flex items-center gap-0.5">
             <ThemeToggle />

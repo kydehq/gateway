@@ -1727,6 +1727,11 @@ body {
   width: auto;
   margin-bottom: 32px;
 }
+/* One wordmark per theme; data-theme on <html> decides which renders. */
+[data-theme="dark"] .login-logo--light,
+[data-theme="light"] .login-logo--dark {
+  display: none;
+}
 
 .login-card {
   background: var(--bg-card);
@@ -1858,7 +1863,8 @@ def _auth_page(
 </head>
 <body>
 <div class="login-container">
-  <img src="/logo.png" alt="KYDE" class="login-logo" />
+  <img src="/logo-black.svg" alt="KYDE" class="login-logo login-logo--light" />
+  <img src="/logo-white.svg" alt="KYDE" class="login-logo login-logo--dark" />
   <div class="login-card">
     <div class="login-title">{title}</div>
     <div class="login-desc">{subtitle}</div>
