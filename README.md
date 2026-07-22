@@ -60,7 +60,7 @@ same place — pick one.
 
 ### Option A — Run the published images (recommended, zero config)
 
-Pulls the public images from GHCR; nothing is built on your host, and only
+Uses the public images from GHCR; nothing is built on your host, and only
 the UI is published — loopback-only (admin `127.0.0.1:8080`, agent proxy
 `127.0.0.1:4000`).
 
