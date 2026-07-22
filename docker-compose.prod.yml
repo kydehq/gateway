@@ -1,5 +1,5 @@
 # PROD posture — hardening deltas merged on top of docker-compose.yml.
-# ALWAYS combine with the base; naming -f files explicitly suppresses the dev
+# ALWAYS combine with the base; naming -f files explicitly suppresses the eval
 # override (docker-compose.override.yml), so you get base + these deltas only.
 #
 #   docker compose --env-file .env.prod \
