@@ -58,15 +58,24 @@ The stack is five containers: the LLM proxy, the admin API, the dashboard UI,
 a regex DLP engine, and Postgres for the ledger. Both options below end in the
 same place — pick one.
 
-### Option A — Run the published images (recommended)
+### Option A — Run the published images (recommended, zero config)
 
-Pulls the latest public images from GHCR; nothing is built on your host, and
-only the UI is published — loopback-only, production posture out of the box.
+Uses the public images from GHCR; nothing is built on your host, and only
+the UI is published — loopback-only (admin `127.0.0.1:8080`, agent proxy
+`127.0.0.1:4000`).
 
 ```bash
 git clone https://github.com/kydehq/gateway.git
 cd gateway
 
+docker compose up -d
+```
+
+For a local evaluation the built-in defaults are all you need. Before any
+real deployment, switch to the hardened prod posture and set your own
+Postgres password:
+
+```bash
 cp .env.starter.example .env.starter
 # Edit .env.starter: set POSTGRES_PASSWORD (e.g. `openssl rand -base64 32`)
 
@@ -79,7 +88,7 @@ docker compose --env-file .env.starter \
 > and `POSTGRES_PASSWORD` only takes effect when the Postgres volume is first
 > created — changing it later locks the services out of an existing database.
 
-### Option B — Build from source
+### Option B — Build from source (development)
 
 Builds the gateway and UI images from this repo and additionally publishes
 each service's port directly to the host (gateway `8081`, admin API `8501`,
@@ -89,13 +98,13 @@ DLP regex `8002`, Postgres loopback `5432`) — handy for development.
 git clone https://github.com/kydehq/gateway.git
 cd gateway
 
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 ```
 
 ### Verify (both options)
 
 ```bash
-curl -fsS http://localhost:4000/health                              # LLM proxy
+curl -fsS http://localhost:4000/v1/health                           # LLM proxy
 curl -fsS -o /dev/null -w "%{http_code}\n" http://localhost:8080/   # admin UI → 200
 docker compose ps                                                    # everything "healthy"
 ```

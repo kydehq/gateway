@@ -8,14 +8,19 @@
 #       enterprise → ghcr.io/kydehq/gateway-distribution/gateway (licensed)
 #     signing/enforce is an image concern — nothing else in compose changes.
 #
-#   * POSTURE  (dev vs prod)      → a second compose file merged on top:
-#       dev  → docker-compose.override.yml   (auto: local build + host ports)
+#   * POSTURE  (eval vs dev vs prod) → a second compose file merged on top:
+#       eval → docker-compose.override.yml   (auto: pull, UI on loopback)
+#       dev  → docker-compose.dev.yml        (explicit -f: local build + host ports)
 #       prod → docker-compose.prod.yml       (explicit -f: pull, loopback, limits)
 #
 # Quick reference (full matrix in docs/deployment.md):
-#   dev, starter (built locally):     docker compose up --build
-#   dev, enterprise (needs ./wheels/*.whl): docker compose --env-file .env.enterprise-dev up --build
-#   prod, enterprise:      docker compose --env-file .env.prod \
+#   eval, starter (quickstart):  docker compose up -d
+#   dev,  starter (built locally):
+#                    docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#   dev,  enterprise (needs ./wheels/*.whl):
+#                    docker compose --env-file .env.enterprise-dev \
+#                      -f docker-compose.yml -f docker-compose.dev.yml up --build
+#   prod, enterprise:    docker compose --env-file .env.prod \
 #                      -f docker-compose.yml -f docker-compose.prod.yml up -d
 #   prod, starter:   as above with --env-file .env.starter   (hardened public deploy)
 #
@@ -52,8 +57,8 @@ services:
 
   kyde-gateway:
     # THE edition switch is ${GATEWAY_REPO}. Everything else is identical
-    # between editions. The dev override adds a local `build:` on top.
-    image: ${REGISTRY:-ghcr.io/kydehq}/${GATEWAY_REPO:-gateway}/gateway:${TAG:-v0.3.1}
+    # between editions. The dev overlay (docker-compose.dev.yml) adds a local `build:` on top.
+    image: ${REGISTRY:-ghcr.io/kydehq}/${GATEWAY_REPO:-gateway}/gateway:${TAG:-latest}
     container_name: kyde-gateway
     init: true
     # Proxy sub-app only (no dashboard mount). Prod bumps to --workers 4.
@@ -95,7 +100,7 @@ services:
       - gateway-network
 
   kyde-api:
-    image: ${REGISTRY:-ghcr.io/kydehq}/${GATEWAY_REPO:-gateway}/gateway:${TAG:-v0.3.1}
+    image: ${REGISTRY:-ghcr.io/kydehq}/${GATEWAY_REPO:-gateway}/gateway:${TAG:-latest}
     container_name: kyde-api
     init: true
     command:
@@ -140,7 +145,7 @@ services:
   kyde-ui:
     # UI content is edition-agnostic, but is published under both repos so the
     # public starter stack has no licensed-path dependency.
-    image: ${REGISTRY:-ghcr.io/kydehq}/${GATEWAY_REPO:-gateway}/ui:${TAG:-v0.3.1}
+    image: ${REGISTRY:-ghcr.io/kydehq}/${GATEWAY_REPO:-gateway}/ui:${TAG:-latest}
     container_name: kyde-ui
     restart: unless-stopped
     healthcheck:

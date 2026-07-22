@@ -138,7 +138,7 @@ in both editions (`DLP_REPO`).
 | Docker Engine | ≥ 24.0 | Required for the Compose path. |
 | Docker Compose | v2 plugin | `docker compose` (not legacy `docker-compose`). |
 | Python | ≥ 3.11 | Only needed for the pip-based install. |
-| Open ports | 4000, 8080, 8081, 8501 | UI (agent proxy + admin) and direct dev ports. Adjust in `docker-compose.override.yml` if conflicting. |
+| Open ports | 4000, 8080 (+ 8081, 8501 in dev) | UI (agent proxy + admin), loopback-only in eval/prod. Direct dev ports come from `docker-compose.dev.yml` — adjust there if conflicting. |
 | Outbound HTTPS | 443 | To reach OpenAI / Anthropic / Gemini / Copilot / GHCR. |
 | TPM 2.0 device (optional) | — | Enterprise edition only, for hardware-backed signing. |
 
@@ -245,20 +245,23 @@ independent choices decide what you run:
   reference. The enterprise gateway image is built and published by the private
   `gateway-enterprise` pipeline (see [`ci.md`](./ci.md)).
 
-- **Posture — dev vs prod.** Selected by *which overlay file* you merge:
-  - **dev** → `docker-compose.override.yml`, auto-merged by a bare
-    `docker compose up`. Builds the image locally and publishes ports to the
-    host.
+- **Posture — eval vs dev vs prod.** Selected by *which overlay file* you merge:
+  - **eval** → `docker-compose.override.yml`, auto-merged by a bare
+    `docker compose up`. Pulls the published images and binds only the UI to
+    loopback — the zero-config quickstart.
+  - **dev** → `docker-compose.dev.yml`, named explicitly with `-f`. Builds the
+    image locally and publishes every service's port to the host.
   - **prod** → `docker-compose.prod.yml`, named explicitly with `-f`. Pulls
-    pinned images, binds only the UI to loopback, and adds resource limits and
-    log rotation.
+    images at the versions specified in your env file (`TAG`, `DLP_*_VERSION`),
+    binds only the UI to loopback, and adds resource limits and log rotation.
 
 Files at a glance:
 
 | File | Role | When loaded |
 | --- | --- | --- |
 | `docker-compose.yml` | base — services, internal ports, image via `${GATEWAY_REPO}` | always |
-| `docker-compose.override.yml` | dev overlay — local build + host ports | auto (bare `up`) |
+| `docker-compose.override.yml` | eval overlay — pull + UI on loopback | auto (bare `up`) |
+| `docker-compose.dev.yml` | dev overlay — local build + host ports | explicit `-f` |
 | `docker-compose.prod.yml` | prod overlay — pull, loopback, limits | explicit `-f` |
 | `docker-compose.regex-dev.yml` | swap in a locally-built `dlp-regex:local` | explicit `-f`, opt-in |
 | `.env.starter` / `.env.prod` / `.env.enterprise-dev` | edition + version selection | `--env-file` |
@@ -266,11 +269,15 @@ Files at a glance:
 Command matrix:
 
 ```bash
-# dev, starter edition, built from source (the default)
-docker compose up --build
+# eval, starter edition, published images (the zero-config quickstart)
+docker compose up -d
+
+# dev, starter edition, built from source
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 
 # dev, enterprise edition (needs kyde-enterprise wheel in ./wheels/)
-docker compose --env-file .env.enterprise-dev up --build
+docker compose --env-file .env.enterprise-dev \
+  -f docker-compose.yml -f docker-compose.dev.yml up --build
 
 # prod, enterprise edition
 docker compose --env-file .env.prod \
@@ -407,9 +414,11 @@ cd gateway
 
 ### 5.2 (Optional) create a `.env` file
 
-A plain `docker compose up --build` runs the **starter** edition with sensible
-defaults and needs no env file. Create one only to change the edition,
-thresholds, or pinned versions:
+The dev stack (`-f docker-compose.yml -f docker-compose.dev.yml up --build`)
+runs the **starter** edition with sensible defaults and needs no env file.
+Create one only to change the edition, thresholds, or pinned versions — or to
+make bare `docker compose` commands default to the dev overlay
+(`COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml`):
 
 ```bash
 # DLP scoring thresholds (0.0 = store everything flagged, 1.0 = store nothing)
@@ -430,7 +439,7 @@ Never commit `.env` — it should be in `.gitignore`.
 ### 5.3 Start the stack
 
 ```bash
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 ```
 
 This builds the starter `kyde-gateway`/`kyde-api` images and the `kyde-ui`
@@ -450,7 +459,7 @@ image from the repo, pulls the `dlp-regex` sidecar, and starts five services:
 ```bash
 # Proxy (direct) and agent proxy (through the UI)
 curl -fsS http://localhost:8081/health
-curl -fsS http://localhost:4000/health
+curl -fsS http://localhost:4000/v1/health
 
 # Admin surface (returns HTML 200)
 curl -fsS -o /dev/null -w "%{http_code}\n" http://localhost:8080/
@@ -542,8 +551,8 @@ admin unlocks it from the Users page — there is no time-based auto-unlock.
 
 ```bash
 git pull
-docker compose pull            # refresh pulled sidecar images
-docker compose up -d --build   # rebuild local images and restart
+docker compose -f docker-compose.yml -f docker-compose.dev.yml pull            # refresh pulled sidecar images
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build   # rebuild local images and restart
 ```
 
 Ledger data and model caches live in named volumes (`postgres-data`,
@@ -611,8 +620,9 @@ docker compose --env-file .env.prod \
 
 You **must** pass both `-f` files: `docker-compose.prod.yml` carries only the
 hardening deltas and relies on the base for the service definitions. Naming the
-files explicitly is also what suppresses the dev `docker-compose.override.yml`
-(which would otherwise re-introduce local builds and host ports).
+files explicitly is also what suppresses the auto-merged eval override
+`docker-compose.override.yml` (harmless here — it only publishes the UI on
+loopback — but explicit files keep the posture unambiguous).
 
 > **Tip:** export `COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml` and
 > `COMPOSE_ENV_FILE=.env.prod` in the deploy shell to drop the repeated flags.
@@ -982,7 +992,7 @@ the admin manages accounts from the Users page, or via
 
 Ports exposed on the host differ by posture:
 
-**Dev (`docker-compose.yml` + `docker-compose.override.yml`, published for local access):**
+**Dev (`docker-compose.yml` + `docker-compose.dev.yml`, published for local access):**
 
 | Host port | Container | Service |
 | --- | --- | --- |
@@ -1077,8 +1087,9 @@ admin cannot grant themselves the auditor role; either another admin does
 it, or create a dedicated auditor account.
 
 **Port 8081 (or 8080/4000) already in use.** Edit the left-hand side of the
-port mapping in `docker-compose.override.yml` (`"8081:8000"` → e.g.
-`"18081:8000"`).
+port mapping — `8081`/`8501`/`8002`/`5432` live in `docker-compose.dev.yml`
+(`"8081:8000"` → e.g. `"18081:8000"`), `8080`/`4000` in
+`docker-compose.override.yml` (eval) or `docker-compose.prod.yml` (prod).
 
 **DLP alerts not showing in the UI / ledger entries missing DLP fields.**
 Both sidecars must be `healthy`, and the thresholds must not be set so high
