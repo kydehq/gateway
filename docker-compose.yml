@@ -57,7 +57,7 @@ services:
 
   kyde-gateway:
     # THE edition switch is ${GATEWAY_REPO}. Everything else is identical
-    # between editions. The dev override adds a local `build:` on top.
+    # between editions. The dev overlay (docker-compose.dev.yml) adds a local `build:` on top.
     image: ${REGISTRY:-ghcr.io/kydehq}/${GATEWAY_REPO:-gateway}/gateway:${TAG:-latest}
     container_name: kyde-gateway
     init: true
