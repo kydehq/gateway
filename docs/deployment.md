@@ -252,8 +252,8 @@ independent choices decide what you run:
   - **dev** → `docker-compose.dev.yml`, named explicitly with `-f`. Builds the
     image locally and publishes every service's port to the host.
   - **prod** → `docker-compose.prod.yml`, named explicitly with `-f`. Pulls
-    pinned images, binds only the UI to loopback, and adds resource limits and
-    log rotation.
+    images at the versions specified in your env file (`TAG`, `DLP_*_VERSION`),
+    binds only the UI to loopback, and adds resource limits and log rotation.
 
 Files at a glance:
 
