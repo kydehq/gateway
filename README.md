@@ -20,6 +20,9 @@ training data.
 
 **Prevent what must not happen. Prove what did. Own what your agents produce.**
 
+<img width="1028" height="649" alt="image" src="https://github.com/user-attachments/assets/a6bf5a2a-2b2b-45c3-9f67-7e52eb972311" />
+
+
 **Two ways to start — same install, one switch:**
 
 | | What it does | Setup |
