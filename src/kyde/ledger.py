@@ -15,12 +15,13 @@ Each entry contains:
   - session_id:   logical session identifier
   - upstream:     upstream provider name
   - full_messages: complete message history from the request
+  - response_body: the upstream response, verbatim (hashes to output_hash)
 
 The chain means you cannot silently delete or alter a past entry —
 any modification breaks every subsequent hash link.
 
-Storage: Postgres 16. `why`, `tool_calls`, `full_messages`, `findings`, and
-`roles` are stored as JSONB so the dashboard can filter inside them with
+Storage: Postgres 16. `why`, `tool_calls`, `full_messages`, `response_body`,
+`findings`, and `roles` are stored as JSONB so the dashboard can filter inside them with
 indexed SQL instead of Python loops. Connection reuse is handled by a
 module-level `psycopg_pool.ConnectionPool` — DATABASE_URL from env.
 """
@@ -100,6 +101,11 @@ class LedgerEntry:
     session_id: str = ""
     upstream: str = ""
     full_messages: list[dict] = field(default_factory=list)
+    # The exact dict output_hash was computed over — stored verbatim so the
+    # hash stays independently recomputable from the row. NOT in _signable()
+    # (the signing contract is locked); enrichment only, like full_messages.
+    # None on rows that predate migration 0022.
+    response_body: Optional[dict] = None
     prompt_tokens: int = 0
     completion_tokens: int = 0
     # Derived classifier label — see server.REQUEST_KIND_* and migration
@@ -318,6 +324,7 @@ def append(
         session_id=session_id,
         upstream=upstream,
         full_messages=full_messages or [],
+        response_body=response_body,
         prompt_tokens=prompt_tokens,
         completion_tokens=completion_tokens,
         request_kind=request_kind,
@@ -342,8 +349,8 @@ def append(
                    why, input_hash, output_hash, tool_calls,
                    prev_hash, entry_hash, signature,
                    client_ip, user_agent, session_id, upstream, full_messages,
-                   prompt_tokens, completion_tokens, request_kind)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                   response_body, prompt_tokens, completion_tokens, request_kind)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 RETURNING seq
                 """,
                 (
@@ -364,6 +371,11 @@ def append(
                     entry.session_id,
                     entry.upstream,
                     Jsonb(entry.full_messages),
+                    (
+                        Jsonb(entry.response_body)
+                        if entry.response_body is not None
+                        else None
+                    ),
                     entry.prompt_tokens,
                     entry.completion_tokens,
                     entry.request_kind,

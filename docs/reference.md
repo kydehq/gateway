@@ -304,6 +304,7 @@ src/kyde/
 | `why` | Last N messages before the action (causal context) |
 | `input_hash` | SHA-256 of full request |
 | `output_hash` | SHA-256 of full response |
+| `response_body` | Full response body, verbatim (hashes to `output_hash`; not part of the signed payload) |
 | `tool_calls` | Extracted tool name + args |
 | `prompt_tokens` | Input/up token count from upstream |
 | `completion_tokens` | Output/down token count from upstream |

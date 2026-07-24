@@ -367,10 +367,34 @@ function ThisTurnTab({
             No new messages on this entry — `full_messages` matches the prior entry.
           </p>
         )}
-        <p className="mt-3 text-[11px] font-mono text-muted-foreground/80">
-          Assistant response is preserved as <code>output_hash</code> only (see Hashes tab) —
-          model-generated text is not stored verbatim in the ledger by design.
-        </p>
+      </section>
+
+      <section className="mb-6">
+        <h3 className="mb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+          Assistant response
+        </h3>
+        {e.response_body_parsed == null ? (
+          <p className="text-[11px] font-mono text-muted-foreground/80">
+            Recorded before response bodies were retained — preserved as{" "}
+            <code>output_hash</code> only (see Hashes tab).
+          </p>
+        ) : e.assistant_text ? (
+          <ChatMessage
+            role="assistant"
+            content={e.assistant_text}
+            e={e}
+            flaggedAlert={findFlaggingAlert(e.assistant_text, alerts)}
+            onOpenAlert={onOpenAlert}
+            showMeta
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No assistant text on this response
+            {(e.tool_calls_parsed?.length ?? 0) > 0
+              ? " — it carried tool calls only (see Tools tab)."
+              : "."}
+          </p>
+        )}
       </section>
 
       {why.length > 0 && (
