@@ -977,6 +977,10 @@ def _decorate_entry(e: dict, *, auditor: bool = False) -> dict:
     why_preview='' so the role gate matches the session-detail behavior.
     """
     tool_calls = e.get("tool_calls") or []
+    # List views never render the response body — drop it so list payloads
+    # stay lean and non-auditor list responses can't leak model output
+    # (detail-endpoint redaction handles the auditor gate for /api/entry).
+    e.pop("response_body", None)
     e["tool_calls_parsed"] = tool_calls
     e["tool_count"] = len(tool_calls)
     e["first_tool"] = tool_calls[0].get("function", "?") if tool_calls else "-"
@@ -1056,6 +1060,20 @@ def api_entry(entry_ref: str, session: str | None = Cookie(None)):
     e["why_parsed"] = e.get("why") or []
     e["tool_calls_parsed"] = e.get("tool_calls") or []
     e["full_messages_parsed"] = e.get("full_messages") or []
+    # Verbatim response body (migration 0022). None on rows recorded before
+    # the migration — the frontend falls back to the hash-only notice.
+    e["response_body_parsed"] = e.get("response_body")
+    # Provider-agnostic extraction of the assistant's reply text, so the
+    # dialog doesn't need to know OpenAI vs Anthropic response shapes.
+    # Lazy import: server.py imports this module at load (see line ~1592
+    # precedent for the reverse direction).
+    from .server import _extract_assistant_text
+
+    e["assistant_text"] = (
+        _extract_assistant_text(e["response_body_parsed"])
+        if isinstance(e.get("response_body_parsed"), dict)
+        else ""
+    )
     e["dt"] = datetime.fromtimestamp(e["timestamp"]).strftime("%Y-%m-%d %H:%M:%S")
     e["prompt_tokens"] = e.get("prompt_tokens", 0) or 0
     e["completion_tokens"] = e.get("completion_tokens", 0) or 0
@@ -1089,8 +1107,11 @@ def api_entry(entry_ref: str, session: str | None = Cookie(None)):
     if not auditor:
         e["why_parsed"] = []
         e["full_messages_parsed"] = []
+        e["response_body_parsed"] = None
+        e["assistant_text"] = ""
         e.pop("why", None)
         e.pop("full_messages", None)
+        e.pop("response_body", None)
         e["content_redacted"] = True
     else:
         e["content_redacted"] = False

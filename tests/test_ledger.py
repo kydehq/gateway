@@ -67,6 +67,18 @@ def test_append_links_to_previous_entry():
     assert fetched["entry_hash"] == second.entry_hash
 
 
+def test_append_stores_response_body_verbatim():
+    body = {"choices": [{"message": {"content": "hello"}}], "model": "gpt-4o-mini"}
+    e = _append_simple(response_body=body)
+
+    fetched = ledger.get_entry(e.entry_id)
+    assert fetched is not None
+    assert fetched["response_body"] == body
+    # The stored body must hash back to the signed output_hash — that's the
+    # whole point of storing the exact dict append() hashed (migration 0022).
+    assert ledger._hash_dict(fetched["response_body"]) == fetched["output_hash"]
+
+
 def test_verify_chain_empty():
     valid, errors = ledger.verify_chain()
     assert valid is True

@@ -329,6 +329,12 @@ export interface EntryDetail {
   why_parsed?: Array<{ role?: string; content?: unknown }>;
   tool_calls_parsed?: Array<{ function?: string; args?: unknown }>;
   full_messages_parsed?: Array<{ role?: string; content?: unknown }>;
+  // Verbatim upstream response body (hashes to output_hash). null on
+  // entries recorded before migration 0022 and for non-auditors.
+  response_body_parsed?: Record<string, unknown> | null;
+  // Assistant reply text extracted server-side (provider-agnostic).
+  // "" when the response carried only tool calls or is unavailable.
+  assistant_text?: string;
   input_hash?: string;
   output_hash?: string;
   prev_hash?: string;

@@ -373,6 +373,18 @@ def test_stats_reflects_written_entries(client):
     assert stats["agents"]["agent:a"] == 2
 
 
+def test_entries_list_never_carries_response_body(client):
+    # List payloads stay lean and leak-free regardless of role — the body is
+    # only reachable via /api/entry under the auditor gate.
+    _seed_user("admin", ["admin"])
+    _login_as(client, "admin")
+    from tests.test_ledger import _append_simple
+
+    _append_simple()
+    items = client.get("/api/entries").json()["items"]
+    assert items and all("response_body" not in it for it in items)
+
+
 def test_entry_detail_redacts_content_for_non_auditors(client):
     _seed_user("admin", ["admin"])
     _login_as(client, "admin")
@@ -385,6 +397,9 @@ def test_entry_detail_redacts_content_for_non_auditors(client):
     assert detail["content_redacted"] is True
     assert detail["why_parsed"] == []
     assert detail["full_messages_parsed"] == []
+    assert detail["response_body_parsed"] is None
+    assert detail["assistant_text"] == ""
+    assert "response_body" not in detail
     # Signature verification happens before redaction. In the enterprise edition
     # rows are signed so this stays True; the starter build is unsigned, so
     # there is no signature to validate and the field is None.
@@ -399,7 +414,12 @@ def test_entry_detail_exposes_content_for_auditors(client):
 
     e = _append_simple(
         why_messages=[{"role": "user", "content": "secret prompt"}],
+        response_body={"choices": [{"message": {"content": "secret reply"}}]},
     )
     detail = client.get(f"/api/entry/{e.entry_id}").json()
     assert detail["content_redacted"] is False
     assert detail["why_parsed"][0]["content"] == "secret prompt"
+    assert detail["response_body_parsed"] == {
+        "choices": [{"message": {"content": "secret reply"}}]
+    }
+    assert detail["assistant_text"] == "secret reply"
