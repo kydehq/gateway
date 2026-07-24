@@ -371,7 +371,11 @@ def append(
                     entry.session_id,
                     entry.upstream,
                     Jsonb(entry.full_messages),
-                    Jsonb(entry.response_body) if entry.response_body is not None else None,
+                    (
+                        Jsonb(entry.response_body)
+                        if entry.response_body is not None
+                        else None
+                    ),
                     entry.prompt_tokens,
                     entry.completion_tokens,
                     entry.request_kind,
