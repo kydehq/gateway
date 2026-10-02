@@ -1,24 +1,15 @@
-# KYDE Gateway — The Behavioral Firewall for AI Agents
+# Behavioral scoring for AI agents starts with seeing every action.
 
 [![CI](https://github.com/kydehq/gateway/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kydehq/gateway/actions/workflows/ci.yml)
 ![Backend coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/kydehq/gateway/badges/backend-coverage.json)
 ![Frontend coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/kydehq/gateway/badges/frontend-coverage.json)
 
-Nobody hands real responsibility to an agent nobody can trust. Agents
-stay stuck waiting for human approval on every step — because when
-something goes wrong, nobody can prove what happened. The provider's
-log lives on their infrastructure, signed with their keys: the suspect
-can't write the police report.
-
-KYDE Gateway is a drop-in, OpenAI-compatible proxy that sits outside
-the agent, in the path itself. Every action is intercepted and recorded
-into an Ed25519-signed, hash-chained ledger — independent of every
-model provider, undeletable by any agent, including the one being
-investigated. And while it records, it sees what flows upstream: your
-prompts, traces, and corrections, before they become someone else's
+AI agents are checked once, on the day they go live. After that, the only one watching the agent is the agent itself. Agents drift away from their task, get hijacked by prompt injection, or get stuck in loops and burn money. Most teams find out weeks later, from a customer, a bill or an auditor.
+Banks solved this for credit cards decades ago. A card is scored once when you apply, and then the bank scores how you use it, with every swipe. Kyde does the same for AI agents: observe every action, score the behavior against the agent’s own normal, and stop the agent when it deviates.
+Kyde Gateway is the part that sits in the path. It is a drop-in, OpenAI-compatible proxy outside the agent. Every action is recorded into a hash-chained, signed ledger that the agent cannot reach, and out-of-scope requests can be stopped before they leave your network. Each model vendor logs only its own slice. The gateway records across all of them, in one place you own.
 training data.
 
-**Prevent what must not happen. Prove what did. Own what your agents produce.**
+**Observe every action. Stop what deviates. Prove what happened.**
 
 <img width="1028" height="649" alt="image" src="https://github.com/user-attachments/assets/a6bf5a2a-2b2b-45c3-9f67-7e52eb972311" />
 
@@ -29,6 +20,12 @@ training data.
 |---|---|---|
 | 🔍 **Observe** (start here) | Logs everything, blocks nothing. Zero risk, zero code changes. In week one you know: what your agents do, what leaves your house, what it costs. | One line: `export OPENAI_BASE_URL=http://localhost:4000/v1` — [Quickstart](#quickstart-docker-compose) |
 | 🛡️ **Enforce** (when ready) | Flip DLP prevention per pattern and MCP tool allow/deny — out-of-scope requests get a 403 before they reach the upstream. | [Policy enforcement](docs/reference.md#policy-enforcement-dlp-prevention) |
+
+
+## The score
+
+The dashboard shows a live trust score per agent and for the whole fleet. It is deterministic and computed from the ledger: the same record always gives the same score, so an auditor can recompute it.
+This is version 1. The five inputs (security, compliance, integrity, reliability, economics) are heuristics derived from what the ledger already stores. A learned baseline of each agent’s normal behavior is not part of the score yet. The drift detectors and the research behind them are published separately: kydehq/behavioral-drift-detection.
 
 ## What it does
 
@@ -181,10 +178,8 @@ ledger — see [deployment guide §8](docs/deployment.md#8-deployment-b--local-p
 for wiring those up individually, and the [CLI reference](docs/reference.md#cli).
 
 ## What it doesn't do (yet)
-
-- Semantic anomaly detection on the behavioral stream
+- A learned drift baseline behind the score. Today’s score is a deterministic v1 heuristic. The drift detectors live in behavioral-drift-detection and are not wired into the gateway yet
+- Limits derived from the score, and stopping an agent because its score dropped. Today enforcement works on DLP patterns and MCP tool rules
 - Multi-agent correlation (linking entries across agents in the same task)
-- Policy enforcement based on ledger state (history-aware block/allow)
 - Distributed ledger / external verification
-- Streaming reassembly for tool call extraction (tool calls in streamed responses
-  are captured but reconstruction is partial)
+- Streaming reassembly for tool call extraction (tool calls in streamed responses are captured but reconstruction is partial)
