@@ -1,8 +1,12 @@
-# KYDE Gateway — The Behavioral Firewall for AI Agents
+# Kyde Gateway — Runtime Control for AI Agents
 
 [![CI](https://github.com/kydehq/gateway/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kydehq/gateway/actions/workflows/ci.yml)
 ![Backend coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/kydehq/gateway/badges/backend-coverage.json)
 ![Frontend coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/kydehq/gateway/badges/frontend-coverage.json)
+
+Kyde Gateway sits between your agents and the models and tools they use. 
+It records every action in a signed, hash-chained ledger and enforces limits before a request leaves. 
+Kyde’s behavioral scoring builds on this record.
 
 Nobody hands real responsibility to an agent nobody can trust. Agents
 stay stuck waiting for human approval on every step — because when
